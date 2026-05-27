@@ -6,8 +6,9 @@ import { Button, HelperText, Text, TextInput } from 'react-native-paper';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginScreen() {
-  const { loginMock, error, clearError } = useAuth();
+  const { loginWithEmail, isLoading, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const emailError = useMemo(() => {
     if (!email.trim()) return null;
@@ -21,7 +22,7 @@ export default function LoginScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Logowanie</Text>
-        <Text style={styles.subtle}>Na razie mock — później podepniemy Firebase.</Text>
+        <Text style={styles.subtle}>Logowanie Firebase (email + hasło).</Text>
 
         <TextInput
           mode="outlined"
@@ -38,14 +39,26 @@ export default function LoginScreen() {
           {emailError ?? ' '}
         </HelperText>
 
+        <TextInput
+          mode="outlined"
+          label="Hasło"
+          value={password}
+          secureTextEntry
+          onChangeText={(t) => {
+            clearError();
+            setPassword(t);
+          }}
+        />
+
         <HelperText type="error" visible={!!error}>
           {error ?? ' '}
         </HelperText>
 
         <Button
           mode="contained"
-          onPress={() => loginMock(email)}
-          disabled={!!emailError || !email.trim()}>
+          loading={isLoading}
+          onPress={() => loginWithEmail(email, password)}
+          disabled={isLoading || !!emailError || !email.trim() || !password}>
           Zaloguj
         </Button>
 

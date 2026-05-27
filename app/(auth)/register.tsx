@@ -3,7 +3,10 @@ import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { Button, HelperText, Text, TextInput } from 'react-native-paper';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function RegisterScreen() {
+  const { registerWithEmail, isLoading, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -25,7 +28,7 @@ export default function RegisterScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Rejestracja</Text>
-        <Text style={styles.subtle}>Tu później podłączymy Firebase Email/Password.</Text>
+        <Text style={styles.subtle}>Rejestracja Firebase (email + hasło).</Text>
 
         <TextInput
           mode="outlined"
@@ -33,7 +36,10 @@ export default function RegisterScreen() {
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
-          onChangeText={setEmail}
+          onChangeText={(t) => {
+            clearError();
+            setEmail(t);
+          }}
         />
         <HelperText type={emailError ? 'error' : 'info'} visible={!!email}>
           {emailError ?? ' '}
@@ -44,14 +50,25 @@ export default function RegisterScreen() {
           label="Hasło"
           value={password}
           secureTextEntry
-          onChangeText={setPassword}
+          onChangeText={(t) => {
+            clearError();
+            setPassword(t);
+          }}
         />
         <HelperText type={passwordError ? 'error' : 'info'} visible={!!password}>
           {passwordError ?? ' '}
         </HelperText>
 
-        <Button mode="contained" disabled={!!emailError || !!passwordError || !email || !password}>
-          Załóż konto (wkrótce)
+        <HelperText type="error" visible={!!error}>
+          {error ?? ' '}
+        </HelperText>
+
+        <Button
+          mode="contained"
+          loading={isLoading}
+          onPress={() => registerWithEmail(email, password)}
+          disabled={isLoading || !!emailError || !!passwordError || !email || !password}>
+          Załóż konto
         </Button>
 
         <View style={styles.row}>
