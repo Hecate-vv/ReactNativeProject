@@ -1,0 +1,59 @@
+---
+description: Cel projektu, zablokowany stack Expo SDK 54, mapowanie kryteriów oceny
+alwaysApply: true
+---
+
+# Cycle Tracker — przegląd projektu
+
+## Cel aplikacji
+
+Aplikacja do śledzenia cyklu menstruacyjnego. Użytkownik wprowadza daty rozpoczęcia okresu; aplikacja wylicza **średnią długość cyklu** i przewiduje następny okres. Dane trwałe w Firebase (Firestore), codzienna afirmacja z ZenQuotes.
+
+## Zablokowany stack (NIE zmieniaj bez uzasadnienia)
+
+| Warstwa | Technologia |
+|---------|-------------|
+| Framework | **Expo SDK 54** (`npx create-expo-app ReactNativeExpo --template tabs@54`) |
+| Routing | **expo-router** — Stack + Tabs |
+| UI | **react-native-paper** + `src/constants/theme.ts` |
+| Backend | **Firebase** (Auth + Firestore) |
+| State globalny | **Context API** + `useReducer` + custom hooks |
+| API zewnętrzne | **ZenQuotes** (`https://zenquotes.io/api/today`) |
+| Offline | AsyncStorage + NetInfo |
+| Natywne | expo-notifications, expo-haptics, expo-secure-store |
+
+## Dokumentacja (OBOWIĄZKOWA przed zmianą kodu)
+
+https://docs.expo.dev/versions/v54.0.0/
+
+Instalacja pakietów: **wyłącznie** `npx expo install <pakiet>`.
+
+## Mapowanie kryteriów oceny → implementacja
+
+| # | Kryterium | Gdzie w projekcie |
+|---|-----------|-------------------|
+| 1 | Architektura | `src/contexts/`, `src/lib/`, prezentacja vs logika |
+| 2 | Responsywność | `useWindowDimensions`, `Spacing`, Flexbox — rule `30-ui` |
+| 3 | Jakość kodu | ESLint + Prettier — rule `80-quality` |
+| 4 | Testy (8–10) | `__tests__/`, `src/lib/cycle/*.test.ts` — rule `80-quality` |
+| 5 | Dokumentacja | README po polsku — rule `90-deployment` |
+| 6 | Funkcje natywne | notifications, haptics, secure-store — rule `70-native` |
+| 7 | Async | `{ data, isLoading, error, retry }` we wszystkich hookach |
+| 8 | Nawigacja Stack+Tabs | `src/app/(auth)/`, `(tabs)/`, `cycle/[id]` — rule `20-navigation` |
+| 9 | Wydajność | FlatList, `React.memo`, `useCallback` — rule `30-ui` |
+| 10 | UI/UX | React Native Paper — rule `30-ui` |
+| 11 | Stan aplikacji | Context API — rule `10-architecture` |
+| 12 | Obsługa błędów | ErrorBoundary, NetInfo, Snackbar retry |
+| 13 | Offline | AsyncStorage cache cykli + quote |
+| 14 | Bezpieczeństwo | SecureStore, `EXPO_PUBLIC_*`, walidacja — rule `40-firebase` |
+| 15 | EAS Build | `eas.json`, własna ikona — rule `90-deployment` |
+| A | Backend Firebase | Firestore CRUD — rule `40-firebase` |
+| B | Auth (2 metody) | Email + Google — rule `40-firebase` |
+| C | API zewnętrzne | ZenQuotes — rule `60-external-apis` |
+| D | UX zaawansowany | Haptics, animacje ładowania (Reanimated) — rule `70-native` |
+
+## Zakazy
+
+- NIE używaj Redux/Zustand — wybrano Context API.
+- NIE commituj `.env`, kluczy Firebase, tokenów.
+- NIE umieszczaj logiki cyklu w komponentach UI — tylko `src/lib/cycle/`.

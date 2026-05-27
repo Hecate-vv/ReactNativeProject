@@ -1,0 +1,95 @@
+---
+description: Pure functions kalkulacji cyklu, walidacja dat, formaty Firestore
+globs: "src/lib/cycle/**,src/contexts/**/cycle*,src/app/(tabs)/insights.tsx"
+alwaysApply: false
+---
+
+# Domena cyklu menstruacyjnego
+
+## Logika TYLKO w `src/lib/cycle/`
+
+Pliki:
+- `calculations.ts` — średnia, predykcja
+- `validation.ts` — walidacja dat wejścia
+- `format.ts` — konwersja Date ↔ ISO string
+
+## `calculateAverageCycleLength`
+
+Oblicza średnią liczbę dni **między** kolejnymi `startDate` (nie długość krwawienia).
+
+```typescript
+// src/lib/cycle/calculations.ts
+export function calculateAverageCycleLength(startDates: Date[]): number | null {
+  if (startDates.length < 2) return null;
+  const sorted = [...startDates].sort((a, b) => a.getTime() - b.getTime());
+  const lengths: number[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const diffMs = sorted[i].getTime() - sorted[i - 1].getTime();
+    lengths.push(Math.round(diffMs / (1000 * 60 * 60 * 24)));
+  }
+  return Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
+}
+```
+
+## `predictNextPeriod`
+
+```typescript
+export function predictNextPeriod(lastStart: Date, averageLengthDays: number): Date {
+  const next = new Date(lastStart);
+  next.setDate(next.getDate() + averageLengthDays);
+  return next;
+}
+```
+
+Użycie na Home: „Przewidywany okres: {formatDate(predicted)}”.
+
+## `validatePeriodEntry`
+
+```typescript
+// src/lib/cycle/validation.ts
+export type ValidationResult = { valid: true } | { valid: false; message: string };
+
+export function validatePeriodEntry(date: Date, existingStarts: Date[]): ValidationResult {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (date > today) {
+    return { valid: false, message: 'Data nie może być w przyszłości' };
+  }
+  const duplicate = existingStarts.some(
+    d => d.toDateString() === date.toDateString()
+  );
+  if (duplicate) {
+    return { valid: false, message: 'Ten dzień jest już zapisany' };
+  }
+  return { valid: true };
+}
+```
+
+## Format dat
+
+| Warstwa | Format |
+|---------|--------|
+| Firestore | ISO string `"YYYY-MM-DD"` lub `Timestamp` |
+| W pamięci (TS) | `Date` |
+| Wyświetlanie | `Intl.DateTimeFormat('pl-PL', { dateStyle: 'medium' })` |
+
+```typescript
+export const toIsoDate = (d: Date) => d.toISOString().split('T')[0];
+export const fromIsoDate = (s: string) => new Date(s + 'T12:00:00');
+```
+
+## Testy obowiązkowe (kryterium 4)
+
+Plik `src/lib/cycle/__tests__/calculations.test.ts`:
+
+- średnia z 3 cykli (28, 30, 29) → 29
+- jeden wpis → `null`
+- `predictNextPeriod` — poprawna data
+- `validatePeriodEntry` — odrzuca przyszłość i duplikat
+
+## Insights screen
+
+`(tabs)/insights.tsx` wyświetla:
+- liczbę zarejestrowanych cykli
+- średnią długość (lub „Potrzebujesz min. 2 wpisów”)
+- listę ostatnich okresów (`FlatList`)

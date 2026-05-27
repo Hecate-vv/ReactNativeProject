@@ -1,0 +1,134 @@
+---
+description: EAS Build, app.json, README po polsku, ikony, mapa kryteriów oceny
+alwaysApply: true
+---
+
+# Deployment i dokumentacja (kryterium 15 + 5)
+
+## app.json — wymagana konfiguracja
+
+```json
+{
+  "expo": {
+    "name": "Cycle Tracker",
+    "slug": "cycle-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "cycletracker",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      ["expo-splash-screen", { "backgroundColor": "#C2185B" }]
+    ],
+    "experiments": { "typedRoutes": true },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundColor": "#FCE4EC"
+      },
+      "package": "com.yourname.cycletracker"
+    },
+    "ios": {
+      "bundleIdentifier": "com.yourname.cycletracker",
+      "supportsTablet": true
+    }
+  }
+}
+```
+
+- **Własna ikona** — nie domyślna Expo (kryterium 15)
+- **Własny splash** — kolor/spójny z brandingiem
+
+## EAS Build
+
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure
+```
+
+`eas.json`:
+```json
+{
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "production": {}
+  }
+}
+```
+
+Build Android APK (kryterium 15):
+```bash
+eas build --platform android --profile preview
+```
+
+Udokumentuj w README.
+
+## README.md — struktura po polsku
+
+README **musi** umożliwić uruchomienie w <5 minut:
+
+```markdown
+# Cycle Tracker
+
+Aplikacja do śledzenia cyklu menstruacyjnego z Firebase i codzienną afirmacją ZenQuotes.
+
+## Technologie
+- Expo SDK 54, expo-router, React Native Paper
+- Firebase Auth (Email + Google) + Firestore
+- ZenQuotes API, AsyncStorage, expo-notifications, expo-haptics
+
+## Wymagania
+- Node.js 20+
+- Konto Expo, projekt Firebase
+
+## Uruchomienie
+1. `git clone ...`
+2. `npm install`
+3. Skopiuj `.env.example` → `.env` i uzupełnij klucze Firebase
+4. `npx expo start` → Expo Go
+
+## Zmienne środowiskowe
+| Zmienna | Opis |
+|---------|------|
+| EXPO_PUBLIC_FIREBASE_API_KEY | ... |
+
+## Build produkcyjny
+`eas build --platform android --profile preview`
+
+## Screenshoty
+![Home](./docs/screenshots/home.png)
+
+## Mapa kryteriów oceny
+| Kryterium | Implementacja |
+|-----------|---------------|
+| 1. Architektura | Context API w `src/contexts/` |
+| ... | ... |
+```
+
+Dodaj `.env.example` (bez prawdziwych kluczy).
+
+## Git — sensowna historia
+
+Commity atomowe, po polsku lub angielsku:
+- `feat: add cycle average calculation`
+- `feat: firebase auth email + google`
+- `test: cycle validation unit tests`
+- `docs: update README with EAS build`
+
+## Pliki w repo
+
+- [ ] `.gitignore` — `.env`, `node_modules/`, `.expo/`
+- [ ] `LICENSE`
+- [ ] `README.md` po polsku
+- [ ] `.env.example`
+- [ ] Screenshoty w `docs/screenshots/`
+
+## Nazwa aplikacji w stores (opcjonalnie)
+
+Slug `cycle-tracker`, scheme `cycletracker` — spójne z deep linkingiem expo-router.

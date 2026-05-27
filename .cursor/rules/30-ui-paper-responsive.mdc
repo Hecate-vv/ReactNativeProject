@@ -1,0 +1,93 @@
+---
+description: React Native Paper, responsywność, FlatList, optymalizacja renderów
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# UI — React Native Paper + responsywność
+
+## React Native Paper (kryterium 10)
+
+Wszystkie ekrany używają komponentów Paper — NIE surowych `Text`/`Button` z RN tam gdzie Paper ma odpowiednik.
+
+| Potrzeba | Komponent Paper |
+|----------|-----------------|
+| Przycisk | `Button` (`mode="contained"`, `loading={isLoading}`) |
+| Pole tekstowe | `TextInput` (`mode="outlined"`) |
+| Karta | `Card`, `Card.Content`, `Card.Actions` |
+| Dialog | `Dialog`, `Portal` |
+| Feedback | `Snackbar` |
+| Lista | `List.Item`, `Divider` |
+| Loading | `ActivityIndicator` |
+
+## PaperProvider w root
+
+```typescript
+// src/app/_layout.tsx
+import { PaperProvider } from 'react-native-paper';
+import { paperLightTheme, paperDarkTheme } from '@/constants/paper-theme';
+import { useColorScheme } from 'react-native';
+
+const scheme = useColorScheme();
+<PaperProvider theme={scheme === 'dark' ? paperDarkTheme : paperLightTheme}>
+```
+
+Motyw Paper **musi** zsynchronizować kolory z `src/constants/theme.ts` (`Colors.light` / `Colors.dark`).
+
+## Responsywność (kryterium 2)
+
+```typescript
+import { useWindowDimensions } from 'react-native';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
+
+const { width } = useWindowDimensions();
+const contentWidth = Math.min(width - Spacing.four * 2, MaxContentWidth);
+```
+
+- Layout: **Flexbox** (`flex`, `flexDirection`, `gap`)
+- Odstępy: **`Spacing.*`** z `theme.ts` — NIE magic numbers (`padding: 24` → `Spacing.four`)
+- Orientacja: testuj portrait i landscape; `useWindowDimensions` reaguje na obie
+
+## FlatList zamiast ScrollView (kryterium 9)
+
+```typescript
+// ❌ BAD — długa lista w ScrollView
+{cycles.map(c => <CycleListItem key={c.id} />)}
+
+// ✅ GOOD
+<FlatList
+  data={cycles}
+  keyExtractor={(item) => item.id}
+  renderItem={({ item }) => <CycleListItem cycle={item} />}
+  getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+  initialNumToRender={10}
+  maxToRenderPerBatch={10}
+  windowSize={5}
+/>
+```
+
+## Optymalizacja (kryterium 9)
+
+- `React.memo` na `CycleListItem`, `DailyQuoteCard`
+- `useCallback` na `renderItem`, `onPress`
+- `useMemo` na posortowane/filtrowane listy cykli
+
+## Stany ładowania w UI
+
+Każdy ekran z async **musi** pokazać loading:
+
+```typescript
+if (isLoading) return <ActivityIndicator animating size="large" style={styles.centered} />;
+if (error) return <ErrorState message={error} onRetry={retry} />;
+```
+
+Dla płynniejszego UX użyj Reanimated `FadeIn` na załadowanej treści (rule `70-native`).
+
+## Paleta cyklu (sugestia)
+
+Różowy/fioletowy akcent spójny z tematem zdrowia — zdefiniuj w `paper-theme.ts`:
+
+```typescript
+primary: '#C2185B',
+secondary: '#7B1FA2',
+```

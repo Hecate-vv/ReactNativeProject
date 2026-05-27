@@ -1,0 +1,108 @@
+---
+description: ZenQuotes API, cache offline 24h, async pattern, NetInfo guard
+alwaysApply: true
+---
+
+# API zewnętrzne — ZenQuotes (kryterium C)
+
+## Endpoint
+
+```
+GET https://zenquotes.io/api/today
+```
+
+Odpowiedź (tablica):
+```json
+[{ "q": "Quote text", "a": "Author", "h": "..." }]
+```
+
+Brak klucza API — rate limit ~1 req/s, **max 1 request/dzień** na użytkownika (cache).
+
+## Struktura
+
+```
+src/services/zenquotes/
+  client.ts       # fetchDailyQuote()
+  cache.ts        # get/set AsyncStorage
+src/hooks/use-daily-quote.ts
+src/components/common/daily-quote-card.tsx
+```
+
+## Klient API
+
+```typescript
+// src/services/zenquotes/client.ts
+export type Quote = { text: string; author: string };
+
+export async function fetchDailyQuote(): Promise<Quote> {
+  const res = await fetch('https://zenquotes.io/api/today');
+  if (!res.ok) throw new Error(`ZenQuotes error: ${res.status}`);
+  const data = await res.json();
+  return { text: data[0].q, author: data[0].a };
+}
+```
+
+**Tylko HTTPS.** Nigdy `http://`.
+
+## Cache offline (kryterium 13 + C)
+
+```typescript
+// src/services/zenquotes/cache.ts
+const CACHE_PREFIX = '@quote_';
+
+export async function getCachedQuote(dateKey: string): Promise<Quote | null> {
+  const raw = await AsyncStorage.getItem(`${CACHE_PREFIX}${dateKey}`);
+  return raw ? JSON.parse(raw) : null;
+}
+
+export async function setCachedQuote(dateKey: string, quote: Quote) {
+  await AsyncStorage.setItem(`${CACHE_PREFIX}${dateKey}`, JSON.stringify(quote));
+}
+
+// dateKey = new Date().toISOString().split('T')[0]
+```
+
+## Hook `useDailyQuote`
+
+```typescript
+export function useDailyQuote() {
+  const [data, setData] = useState<Quote | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isConnected } = useNetwork();
+
+  const load = useCallback(async () => {
+    const today = new Date().toISOString().split('T')[0];
+    setIsLoading(true);
+    setError(null);
+    try {
+      const cached = await getCachedQuote(today);
+      if (cached) { setData(cached); setIsLoading(false); return; }
+      if (!isConnected) throw new Error('Brak połączenia');
+      const quote = await fetchDailyQuote();
+      await setCachedQuote(today, quote);
+      setData(quote);
+    } catch (e) {
+      const stale = await getCachedQuote(today); // fallback ostatni dzień
+      if (stale) setData(stale);
+      else setError(e instanceof Error ? e.message : 'Błąd pobierania cytatu');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isConnected]);
+
+  return { data, isLoading, error, retry: load };
+}
+```
+
+## Integracja w Home (`(tabs)/index.tsx`)
+
+`<DailyQuoteCard>` — integralna część ekranu głównego (nie osobny ekran „na siłę”):
+- loading → `ActivityIndicator` lub skeleton z Reanimated `FadeIn`
+- error → komunikat + przycisk „Spróbuj ponownie”
+- success → cytat + autor w `Card` z Paper
+
+## Rate limit
+
+- Nie odświeżaj cytatu przy każdym `focus` — tylko raz dziennie (sprawdź cache po `dateKey`).
+- Przy błędzie 429 — użyj cache, nie retry w pętli.
