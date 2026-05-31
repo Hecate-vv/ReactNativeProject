@@ -35,15 +35,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdToken();
-        await saveAuthToken(token);
-        setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
-      } else {
-        await clearAuthToken();
-        setUser(null);
+      try {
+        if (firebaseUser) {
+          try {
+            const token = await firebaseUser.getIdToken();
+            await saveAuthToken(token);
+          } catch {
+            // SecureStore czasem zawodzi w Expo Go — sesja i tak działa przez Firebase
+          }
+          setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
+        } else {
+          try {
+            await clearAuthToken();
+          } catch {
+            // ignore
+          }
+          setUser(null);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
     return () => unsub();
   }, []);
@@ -52,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     setIsLoading(true);
     try {
-      await loginWithEmail(email.trim(), password);
+      await loginWithEmail(email.trim().toLowerCase(), password);
     } catch (e) {
       setError(mapFirebaseError(e));
       setIsLoading(false);
@@ -63,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     setIsLoading(true);
     try {
-      await registerWithEmail(email.trim(), password);
+      await registerWithEmail(email.trim().toLowerCase(), password);
     } catch (e) {
       setError(mapFirebaseError(e));
       setIsLoading(false);

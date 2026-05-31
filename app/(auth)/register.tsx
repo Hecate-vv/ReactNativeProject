@@ -1,11 +1,13 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
-import { Button, HelperText, Text, TextInput } from 'react-native-paper';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Button, HelperText, Text, TextInput, useTheme } from 'react-native-paper';
 
 import { useAuth } from '@/hooks/use-auth';
 
 export default function RegisterScreen() {
+  const router = useRouter();
+  const theme = useTheme();
   const { registerWithEmail, isLoading, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,10 +73,14 @@ export default function RegisterScreen() {
           Załóż konto
         </Button>
 
-        <View style={styles.row}>
-          <Text>Masz konto?</Text>
-          <Link href="/(auth)/login">Logowanie</Link>
-        </View>
+        <Pressable
+          onPress={() => router.push('/(auth)/login')}
+          style={styles.linkPressable}
+          accessibilityRole="button">
+          <Text style={{ color: theme.colors.primary, textAlign: 'center' }}>
+            Masz konto? Zaloguj się
+          </Text>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
@@ -84,6 +90,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 16 },
   card: { gap: 12 },
   subtle: { opacity: 0.75 },
-  row: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  linkPressable: { alignSelf: 'center', paddingVertical: 8 },
 });
 

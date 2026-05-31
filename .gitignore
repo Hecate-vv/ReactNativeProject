@@ -30,6 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Cursor IDE (reguły lokalne — nie pushujemy)
+.cursor/
+
 # local env files
 .env*.local
 .env
