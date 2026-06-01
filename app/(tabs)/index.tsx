@@ -1,32 +1,65 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Card, Text } from 'react-native-paper';
 
+import { DailyQuoteCard } from '@/components/common/daily-quote-card';
+import {
+  calculateAverageCycleLength,
+  daysUntil,
+  getLatestCycleStart,
+  predictNextPeriod,
+} from '@/lib/cycle/calculations';
+import { formatDaysLabel, formatDisplayDate } from '@/lib/cycle/format';
+import { parseIsoDate } from '@/lib/cycle/period-range';
 import { useAuth } from '@/hooks/use-auth';
+import { useCycles } from '@/hooks/use-cycles';
+import { useDailyQuote } from '@/hooks/use-daily-quote';
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { cycles } = useCycles();
+  const { data: quote, isLoading, error, retry } = useDailyQuote();
+
+  const cycleInfo = useMemo(() => {
+    const startDates = cycles.map((c) => parseIsoDate(c.startDate));
+    const average = calculateAverageCycleLength(startDates);
+    const lastStart = getLatestCycleStart(cycles);
+
+    if (!lastStart || average === null) {
+      return cycles.length === 0
+        ? 'Dodaj okresy w Kalendarzu, aby zobaczyć przewidywania.'
+        : 'Potrzebujesz min. 2 wpisy startu okresu, aby przewidzieć następny.';
+    }
+
+    const predicted = predictNextPeriod(lastStart, average);
+    const days = daysUntil(predicted);
+    return `Przewidywany okres: ${formatDisplayDate(predicted)} (${formatDaysLabel(days)})`;
+  }, [cycles]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">Home</Text>
-      <Text style={styles.subtle}>Zalogowana: {user?.email ?? '—'}</Text>
+      <Text style={styles.subtle}>Cześć, {user?.email ?? 'użytkowniczko'}!</Text>
 
-      <Card>
-        <Card.Title title="Dalej krok po kroku" />
+      <DailyQuoteCard quote={quote} isLoading={isLoading} error={error} onRetry={retry} />
+
+      <Card style={styles.card}>
+        <Card.Title title="Twój cykl" />
         <Card.Content>
-          <Text>Teraz mamy szkielet routingu: auth + tabs + guard w root layout.</Text>
-          <Text>W następnym kroku dołożymy prawdziwy Auth w Firebase.</Text>
+          <Text>{cycleInfo}</Text>
+          {cycles.length > 0 && (
+            <Text style={styles.subtle}>
+              Ostatni start: {formatDisplayDate(getLatestCycleStart(cycles)!)}
+            </Text>
+          )}
         </Card.Content>
-        <Card.Actions>
-          <Button mode="contained">Dodaj cykl (wkrótce)</Button>
-        </Card.Actions>
       </Card>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { padding: 16, gap: 12, paddingBottom: 32 },
   subtle: { opacity: 0.75 },
+  card: { marginBottom: 4 },
 });
