@@ -8,6 +8,7 @@ import { PaperProvider } from 'react-native-paper';
 
 import { paperDarkTheme, paperLightTheme } from '@/constants/paper-theme';
 import { AuthProvider } from '@/contexts/auth-context';
+import { CycleProvider } from '@/contexts/cycle-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -55,12 +56,14 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <PaperProvider theme={colorScheme === 'dark' ? paperDarkTheme : paperLightTheme}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootStack />
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </PaperProvider>
+      <CycleProvider>
+        <PaperProvider theme={colorScheme === 'dark' ? paperDarkTheme : paperLightTheme}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <RootStack />
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </PaperProvider>
+      </CycleProvider>
     </AuthProvider>
   );
 }

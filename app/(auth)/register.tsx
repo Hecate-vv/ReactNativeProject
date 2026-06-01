@@ -30,7 +30,7 @@ export default function RegisterScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Rejestracja</Text>
-        <Text style={styles.subtle}>Rejestracja Firebase (email + hasło).</Text>
+        <Text style={styles.subtle}>Tryb demo (bez Firebase) — konto zapisuje się na telefonie.</Text>
 
         <TextInput
           mode="outlined"

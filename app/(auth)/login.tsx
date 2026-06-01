@@ -24,7 +24,7 @@ export default function LoginScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Logowanie</Text>
-        <Text style={styles.subtle}>Logowanie Firebase (email + hasło).</Text>
+        <Text style={styles.subtle}>Tryb demo (bez Firebase) — email + hasło z rejestracji.</Text>
 
         <TextInput
           mode="outlined"

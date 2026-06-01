@@ -6,7 +6,14 @@ export function mapFirebaseError(e: unknown): string {
     console.warn('[Firebase Auth]', code, message);
   }
 
+  if (code?.includes('api-key') || message?.toLowerCase().includes('api-key')) {
+    return 'Błąd konfiguracji Firebase (klucz API). Sprawdź plik .env i uruchom: npx expo start -c';
+  }
+
   switch (code) {
+    case 'auth/invalid-api-key':
+    case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+      return 'Błąd konfiguracji Firebase (klucz API). Sprawdź .env, zapisz plik i uruchom: npx expo start -c';
     case 'auth/invalid-email':
       return 'Nieprawidłowy email.';
     case 'auth/wrong-password':
