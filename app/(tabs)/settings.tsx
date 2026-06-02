@@ -5,14 +5,14 @@ import { Button, Text } from 'react-native-paper';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, isSubmitting } = useAuth();
 
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium">Ustawienia</Text>
       <Text style={styles.subtle}>Użytkownik: {user?.email ?? '—'}</Text>
 
-      <Button mode="outlined" onPress={logout}>
+      <Button mode="outlined" loading={isSubmitting} disabled={isSubmitting} onPress={() => logout()}>
         Wyloguj
       </Button>
     </View>

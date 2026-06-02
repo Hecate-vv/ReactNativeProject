@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 export default function LoginScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { loginWithEmail, isLoading, error, clearError } = useAuth();
+  const { loginWithEmail, isSubmitting, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -24,7 +24,7 @@ export default function LoginScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Logowanie</Text>
-        <Text style={styles.subtle}>Tryb demo (bez Firebase) — email + hasło z rejestracji.</Text>
+        <Text style={styles.subtle}>Zaloguj się kontem Firebase (email i hasło).</Text>
 
         <TextInput
           mode="outlined"
@@ -58,9 +58,9 @@ export default function LoginScreen() {
 
         <Button
           mode="contained"
-          loading={isLoading}
+          loading={isSubmitting}
           onPress={() => loginWithEmail(email, password)}
-          disabled={isLoading || !!emailError || !email.trim() || !password}>
+          disabled={isSubmitting || !!emailError || !email.trim() || !password}>
           Zaloguj
         </Button>
 

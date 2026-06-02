@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 export default function RegisterScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { registerWithEmail, isLoading, error, clearError } = useAuth();
+  const { registerWithEmail, isSubmitting, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -30,7 +30,7 @@ export default function RegisterScreen() {
       style={styles.container}>
       <View style={styles.card}>
         <Text variant="headlineMedium">Rejestracja</Text>
-        <Text style={styles.subtle}>Tryb demo (bez Firebase) — konto zapisuje się na telefonie.</Text>
+        <Text style={styles.subtle}>Utwórz konto w Firebase — email i hasło (min. 6 znaków).</Text>
 
         <TextInput
           mode="outlined"
@@ -67,9 +67,9 @@ export default function RegisterScreen() {
 
         <Button
           mode="contained"
-          loading={isLoading}
+          loading={isSubmitting}
           onPress={() => registerWithEmail(email, password)}
-          disabled={isLoading || !!emailError || !!passwordError || !email || !password}>
+          disabled={isSubmitting || !!emailError || !!passwordError || !email || !password}>
           Załóż konto
         </Button>
 

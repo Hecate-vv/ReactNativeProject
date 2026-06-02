@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import React, {
   createContext,
   useCallback,
@@ -9,87 +9,84 @@ import React, {
   type ReactNode,
 } from 'react';
 
+import { clearAuthToken, saveAuthToken } from '@/lib/storage/secure-storage';
+import {
+  registerWithEmail as firebaseRegister,
+  signInWithEmail as firebaseSignIn,
+  signOutUser,
+} from '@/services/firebase/auth';
+import { auth } from '@/services/firebase/config';
+
 export type AppUser = { uid: string; email: string | null };
 
 type AuthContextValue = {
   user: AppUser | null;
   isLoading: boolean;
+  isSubmitting: boolean;
   error: string | null;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const MOCK_USERS_KEY = '@mock_auth_users_v1';
-const MOCK_SESSION_KEY = '@mock_auth_session_v1';
-
-type MockUsersStore = Record<string, string>;
-
-async function loadMockUsers(): Promise<MockUsersStore> {
-  const raw = await AsyncStorage.getItem(MOCK_USERS_KEY);
-  return raw ? (JSON.parse(raw) as MockUsersStore) : {};
-}
-
-async function saveMockUsers(users: MockUsersStore) {
-  await AsyncStorage.setItem(MOCK_USERS_KEY, JSON.stringify(users));
+function toAppUser(firebaseUser: User): AppUser {
+  return { uid: firebaseUser.uid, email: firebaseUser.email };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Tryb demo: bez Firebase — sesja i konta trzymane lokalnie w AsyncStorage.
   useEffect(() => {
-    (async () => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
-        const raw = await AsyncStorage.getItem(MOCK_SESSION_KEY);
-        if (raw) {
-          setUser(JSON.parse(raw) as AppUser);
+        if (firebaseUser) {
+          const token = await firebaseUser.getIdToken();
+          await saveAuthToken(token);
+          setUser(toAppUser(firebaseUser));
+        } else {
+          await clearAuthToken();
+          setUser(null);
         }
+      } catch (e) {
+        if (__DEV__) {
+          console.warn('[Auth] onAuthStateChanged side effect failed:', e);
+        }
+        setUser(firebaseUser ? toAppUser(firebaseUser) : null);
       } finally {
         setIsLoading(false);
       }
-    })();
-  }, []);
-
-  const persistSession = useCallback(async (next: AppUser | null) => {
-    if (next) {
-      await AsyncStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(next));
-    } else {
-      await AsyncStorage.removeItem(MOCK_SESSION_KEY);
-    }
-    setUser(next);
+    });
+    return unsub;
   }, []);
 
   const loginWithEmailAction = useCallback(async (email: string, password: string) => {
     setError(null);
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
-      const normalized = email.trim().toLowerCase();
+      const normalized = email.trim();
       if (!normalized || !password) {
         setError('Podaj email i hasło.');
         return;
       }
-      const users = await loadMockUsers();
-      if (users[normalized] !== password) {
-        setError('Nieprawidłowy email lub hasło.');
-        return;
-      }
-      await persistSession({ uid: `mock_${normalized}`, email: normalized });
+      await firebaseSignIn(normalized, password);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Wystąpił błąd logowania.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  }, [persistSession]);
+  }, []);
 
   const registerWithEmailAction = useCallback(async (email: string, password: string) => {
     setError(null);
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
-      const normalized = email.trim().toLowerCase();
+      const normalized = email.trim();
       if (!normalized.includes('@')) {
         setError('Nieprawidłowy email.');
         return;
@@ -98,23 +95,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError('Hasło musi mieć min. 6 znaków.');
         return;
       }
-      const users = await loadMockUsers();
-      if (users[normalized]) {
-        setError('Email jest już zajęty — zaloguj się.');
-        return;
-      }
-      users[normalized] = password;
-      await saveMockUsers(users);
-      await persistSession({ uid: `mock_${normalized}`, email: normalized });
+      await firebaseRegister(normalized, password);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Wystąpił błąd rejestracji.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  }, [persistSession]);
+  }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setError(null);
-    persistSession(null);
-  }, [persistSession]);
+    setIsSubmitting(true);
+    try {
+      await signOutUser();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Nie udało się wylogować.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -122,13 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       isLoading,
+      isSubmitting,
       error,
       loginWithEmail: loginWithEmailAction,
       registerWithEmail: registerWithEmailAction,
       logout,
       clearError,
     }),
-    [user, isLoading, error, loginWithEmailAction, registerWithEmailAction, logout, clearError],
+    [user, isLoading, isSubmitting, error, loginWithEmailAction, registerWithEmailAction, logout, clearError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
