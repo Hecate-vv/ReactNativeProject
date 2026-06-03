@@ -2,6 +2,9 @@ import Constants from 'expo-constants';
 import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { Platform } from 'react-native';
+
+import { getFirebaseAuth } from '@/services/firebase/auth-native';
 
 type FirebaseExtra = {
   apiKey?: string;
@@ -41,5 +44,5 @@ if (__DEV__) {
 
 const app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
+export const auth = Platform.OS === 'web' ? getAuth(app) : getFirebaseAuth(app);
 export const db = getFirestore(app);

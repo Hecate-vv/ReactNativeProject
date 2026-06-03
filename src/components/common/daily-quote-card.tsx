@@ -10,6 +10,7 @@ type DailyQuoteCardProps = {
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
+  isFromCache?: boolean;
 };
 
 export const DailyQuoteCard = memo(function DailyQuoteCard({
@@ -17,6 +18,7 @@ export const DailyQuoteCard = memo(function DailyQuoteCard({
   isLoading,
   error,
   onRetry,
+  isFromCache,
 }: DailyQuoteCardProps) {
   if (isLoading) {
     return (
@@ -47,7 +49,12 @@ export const DailyQuoteCard = memo(function DailyQuoteCard({
   return (
     <Animated.View entering={FadeIn.duration(400)}>
       <Card style={styles.card}>
-        <Card.Title title="Cytat dnia" subtitle="ZenQuotes · api/today" />
+        <Card.Title
+          title="Cytat dnia"
+          subtitle={
+            isFromCache ? 'ZenQuotes · zapisane lokalnie' : 'ZenQuotes · api/today'
+          }
+        />
         <Card.Content style={styles.content}>
           <Text variant="bodyLarge" style={styles.quote}>
             „{quote.text}”

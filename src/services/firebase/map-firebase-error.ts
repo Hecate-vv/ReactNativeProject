@@ -1,9 +1,10 @@
-export function mapFirebaseError(e: unknown): string {
+/** Mapowanie błędów Firebase Auth i Firestore na komunikaty UI. */
+export function mapFirestoreError(e: unknown): string {
   const code = (e as { code?: string })?.code;
   const message = (e as { message?: string })?.message;
 
   if (__DEV__ && code) {
-    console.warn('[Firebase Auth]', code, message);
+    console.warn('[Firebase]', code, message);
   }
 
   if (code?.includes('api-key') || message?.toLowerCase().includes('api-key')) {
@@ -11,6 +12,20 @@ export function mapFirebaseError(e: unknown): string {
   }
 
   switch (code) {
+    case 'permission-denied':
+      return 'Brak uprawnień do danych. Zaloguj się ponownie lub sprawdź reguły Firestore.';
+    case 'unavailable':
+      return 'Firestore jest chwilowo niedostępny. Spróbuj ponownie za chwilę.';
+    case 'failed-precondition':
+      return 'Brak wymaganego indeksu w Firestore. Sprawdź konsolę Firebase.';
+    case 'not-found':
+      return 'Nie znaleziono dokumentu.';
+    case 'already-exists':
+      return 'Dokument już istnieje.';
+    case 'resource-exhausted':
+      return 'Przekroczono limit zapytań. Spróbuj później.';
+    case 'deadline-exceeded':
+      return 'Przekroczono limit czasu połączenia. Sprawdź internet.';
     case 'auth/invalid-api-key':
     case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
       return 'Błąd konfiguracji Firebase (klucz API). Sprawdź .env, zapisz plik i uruchom: npx expo start -c';
@@ -33,6 +48,9 @@ export function mapFirebaseError(e: unknown): string {
     case 'auth/operation-not-allowed':
       return 'Logowanie email/hasło nie jest włączone w Firebase Console.';
     default:
-      return 'Wystąpił błąd. Spróbuj ponownie.';
+      return message && message.length < 120 ? message : 'Wystąpił błąd. Spróbuj ponownie.';
   }
 }
+
+/** @deprecated Użyj `mapFirestoreError` — alias dla kompatybilności. */
+export const mapFirebaseError = mapFirestoreError;

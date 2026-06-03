@@ -20,6 +20,8 @@ import { auth } from '@/services/firebase/config';
 export type AppUser = { uid: string; email: string | null };
 
 type AuthContextValue = {
+  /** Alias `user` — spójny z `AsyncState.data` (kryterium 7). */
+  data: AppUser | null;
   user: AppUser | null;
   isLoading: boolean;
   isSubmitting: boolean;
@@ -28,6 +30,7 @@ type AuthContextValue = {
   registerWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  retry: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -42,28 +45,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const applyAuthUser = useCallback(async (firebaseUser: User | null) => {
+    if (firebaseUser) {
+      const token = await firebaseUser.getIdToken();
+      await saveAuthToken(token);
+      setUser(toAppUser(firebaseUser));
+    } else {
+      await clearAuthToken();
+      setUser(null);
+    }
+  }, []);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      setError(null);
       try {
-        if (firebaseUser) {
-          const token = await firebaseUser.getIdToken();
-          await saveAuthToken(token);
-          setUser(toAppUser(firebaseUser));
-        } else {
-          await clearAuthToken();
-          setUser(null);
-        }
+        await applyAuthUser(firebaseUser);
       } catch (e) {
         if (__DEV__) {
           console.warn('[Auth] onAuthStateChanged side effect failed:', e);
         }
         setUser(firebaseUser ? toAppUser(firebaseUser) : null);
+        setError('Nie udało się przywrócić sesji. Spróbuj ponownie.');
       } finally {
         setIsLoading(false);
       }
     });
     return unsub;
-  }, []);
+  }, [applyAuthUser]);
+
+  const retry = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      await auth.authStateReady();
+      await applyAuthUser(auth.currentUser);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Nie udało się przywrócić sesji.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [applyAuthUser]);
 
   const loginWithEmailAction = useCallback(async (email: string, password: string) => {
     setError(null);
@@ -119,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(
     () => ({
+      data: user,
       user,
       isLoading,
       isSubmitting,
@@ -127,8 +150,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       registerWithEmail: registerWithEmailAction,
       logout,
       clearError,
+      retry,
     }),
-    [user, isLoading, isSubmitting, error, loginWithEmailAction, registerWithEmailAction, logout, clearError],
+    [
+      user,
+      isLoading,
+      isSubmitting,
+      error,
+      loginWithEmailAction,
+      registerWithEmailAction,
+      logout,
+      clearError,
+      retry,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

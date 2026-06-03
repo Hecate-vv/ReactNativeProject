@@ -1,50 +1,132 @@
-# Welcome to your Expo app 👋
+# Cycle Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikacja do śledzenia cyklu menstruacyjnego z Firebase i codzienną afirmacją ZenQuotes.
 
-## Get started
+## Technologie
 
-1. Install dependencies
+- Expo SDK 54, expo-router, React Native Paper
+- Firebase Auth (email/hasło) + Firestore (`users/{uid}/periods`)
+- ZenQuotes API, AsyncStorage (cache offline), expo-notifications, expo-haptics, expo-secure-store
 
-   ```bash
-   npm install
-   ```
+## Wymagania
 
-2. Start the app
+- Node.js 20+
+- Konto Expo, projekt Firebase
 
-   ```bash
-   npx expo start
-   ```
+## Uruchomienie
 
-In the output, you'll find options to open the app in a
+1. `git clone <repo-url>`
+2. `npm install`
+3. Skopiuj `.env.example` → `.env` i uzupełnij klucze Firebase
+4. `npx expo start` → Expo Go
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Zmienne środowiskowe
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| Zmienna | Opis |
+|---|---|
+| `EXPO_PUBLIC_FIREBASE_API_KEY` | Klucz API Firebase (publiczny w bundlu klienta) |
+| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Domena Auth |
+| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | ID projektu |
+| `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | Bucket Storage |
+| `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Sender ID |
+| `EXPO_PUBLIC_FIREBASE_APP_ID` | App ID |
 
-## Get a fresh project
+## Firestore — okresy
 
-When you're ready, run:
+Ścieżka: `users/{userId}/periods/{periodId}`
 
-```bash
-npm run reset-project
+Pola w dokumencie:
+
+- `startDate`, `endDate` — `Timestamp`
+- `note` — string (domyślnie `''`)
+- `createdAt`, `updatedAt` — `serverTimestamp()`
+
+Serwis: [`src/services/firebase/periods.ts`](src/services/firebase/periods.ts)
+
+Reguły: [`firestore.rules`](firestore.rules) — wdroż w Firebase Console (`firebase deploy --only firestore:rules`).
+
+### Przykład: zapis po zalogowaniu
+
+```typescript
+import { auth } from '@/services/firebase/config';
+import { createPeriod } from '@/services/firebase/periods';
+
+async function saveNewPeriod() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const period = await createPeriod(user.uid, {
+    startDate: '2026-06-01',
+    endDate: '2026-06-05',
+    note: 'Lekkie objawy',
+  });
+
+  console.log('Zapisano okres:', period.id);
+}
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Tryb offline
 
-## Learn more
+### Co działa bez internetu (po wcześniejszym pobraniu online)
 
-To learn more about developing your project with Expo, look at the following resources:
+| Dane | Mechanizm | Klucz cache |
+|---|---|---|
+| Okresy | `fetchPeriods` → `cachePeriods` → odczyt z AsyncStorage | `@cycles_cache_v1_{uid}` |
+| Cytat dnia | cache-first w `useDailyQuote` | `@quote_today_v1_{data}` |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Zachowanie UI
 
-## Join the community
+- Baner **„Dane z pamięci urządzenia”** na Home, Kalendarzu i Statystykach (`isFromCache`).
+- Snackbar przy utracie sieci: *„Brak internetu — wyświetlane są dane zapisane lokalnie”*.
+- **Zapis i usuwanie okresów wymagają internetu** — mutacje offline nie są kolejkowane.
 
-Join our community of developers creating universal apps.
+### Świadome ograniczenia (poza zakresem)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Brak pełnej synchronizacji offline→online (kolejka mutacji, konflikty).
+- Brak automatycznego retry zapisów po powrocie sieci.
+- Cytat na **nowy dzień** bez internetu i bez wcześniejszego cache → komunikat błędu.
+
+## Bezpieczeństwo
+
+### Mechanizmy
+
+| Obszar | Implementacja |
+|---|---|
+| Konfiguracja Firebase | Wyłącznie `EXPO_PUBLIC_*` w `.env` (nie commituj `.env`) |
+| Token sesji | `expo-secure-store` — [`src/lib/storage/secure-storage.ts`](src/lib/storage/secure-storage.ts) |
+| Dane okresów offline | AsyncStorage (niezaszyfrowane — tylko cache odczytu) |
+| API zewnętrzne | Wyłącznie HTTPS (`zenquotes.io`) |
+| Firestore | Reguły: użytkownik widzi tylko `users/{własnyUid}/periods/*` |
+| Walidacja wejścia | `validatePeriodInput`, `validatePeriodRange` przed zapisem |
+
+### Ryzyka i mitigacje
+
+| Ryzyko | Mitigacja |
+|---|---|
+| Klucze `EXPO_PUBLIC_*` są widoczne w APK | Ograniczenia API w Google Cloud + **Firestore Security Rules** |
+| Dane zdrowotne w AsyncStorage (plain JSON) | Cache tylko do odczytu offline; nie logować zawartości; wrażliwe tokeny w SecureStore |
+| Firebase Auth persistence w AsyncStorage (standard RN) | Dokumentacja; brak duplikowania tokenów w dodatkowych kluczach |
+| Brak szyfrowania cache okresów | Akceptowane w MVP; pełna kolejka sync — rozszerzenie |
+
+## Testy
+
+```bash
+npm test
+```
+
+Obejmują m.in.: cache okresów, walidację dat, mapowanie `Timestamp` ↔ `YYYY-MM-DD`.
+
+## Build produkcyjny
+
+```bash
+eas build --platform android --profile preview
+```
+
+## Mapa kryteriów (skrót)
+
+| Kryterium | Implementacja |
+|---|---|
+| 13 Offline | Cache okresów + cytatu, banery UI |
+| 14 Bezpieczeństwo | SecureStore, ENV, HTTPS, reguły Firestore |
+| A Backend | Firestore CRUD `periods` |
+| C API zewnętrzne | ZenQuotes + cache dzienny |

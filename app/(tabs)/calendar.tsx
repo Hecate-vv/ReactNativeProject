@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import {
@@ -10,6 +11,7 @@ import {
   TextInput,
 } from 'react-native-paper';
 
+import { OfflineCacheBanner } from '@/components/common/offline-cache-banner';
 import { MonthCalendar } from '@/components/cycle/month-calendar';
 import { findCycleForDate, formatCycleRange } from '@/lib/cycle/period-range';
 import { useCycles } from '@/hooks/use-cycles';
@@ -26,7 +28,16 @@ function isViewingSavedCycle(
 }
 
 export default function CalendarScreen() {
-  const { cycles, isLoading, error, addCycle, removeCycle, retry } = useCycles();
+  const {
+    cycles,
+    isLoading,
+    error,
+    addCycle,
+    removeCycle,
+    retry,
+    isFromCache,
+    isOffline,
+  } = useCycles();
 
   const [draftStart, setDraftStart] = useState<string | null>(null);
   const [draftEnd, setDraftEnd] = useState<string | null>(null);
@@ -97,6 +108,8 @@ export default function CalendarScreen() {
     const cycle = savedCycle;
     if (!cycle) return;
 
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
     Alert.alert('Usunąć okres?', formatCycleRange(cycle), [
       { text: 'Anuluj', style: 'cancel' },
       {
@@ -125,6 +138,7 @@ export default function CalendarScreen() {
       <Text style={styles.subtle}>
         Start + koniec zaznaczają cały okres. Kliknij zapisany dzień, aby usunąć wpis.
       </Text>
+      <OfflineCacheBanner isFromCache={isFromCache} isOffline={isOffline} />
 
       <Card style={styles.card}>
         <Card.Content>
