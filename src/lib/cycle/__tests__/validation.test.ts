@@ -9,12 +9,15 @@ describe('validatePeriodDateRange', () => {
     const result = validatePeriodDateRange('2026-06-10', '2026-06-05');
     expect(result).toEqual({
       valid: false,
-      message: 'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',
+      message:
+        'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',
     });
   });
 
   it('accepts same-day range', () => {
-    expect(validatePeriodDateRange('2026-06-01', '2026-06-01')).toEqual({ valid: true });
+    expect(validatePeriodDateRange('2026-06-01', '2026-06-01')).toEqual({
+      valid: true,
+    });
   });
 
   it('rejects invalid ISO format', () => {
@@ -26,12 +29,19 @@ describe('validatePeriodDateRange', () => {
 describe('validatePeriodInput', () => {
   it('validates full PeriodInput', () => {
     expect(
-      validatePeriodInput({ startDate: '2026-01-01', endDate: '2026-01-05', note: 'ok' }),
+      validatePeriodInput({
+        startDate: '2026-01-01',
+        endDate: '2026-01-05',
+        note: 'ok',
+      })
     ).toEqual({ valid: true });
   });
 
   it('requires startDate when provided empty', () => {
-    const result = validatePeriodInput({ startDate: '  ', endDate: '2026-01-05' });
+    const result = validatePeriodInput({
+      startDate: '  ',
+      endDate: '2026-01-05',
+    });
     expect(result.valid).toBe(false);
   });
 });

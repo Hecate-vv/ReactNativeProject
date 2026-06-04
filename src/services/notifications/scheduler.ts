@@ -34,12 +34,14 @@ Notifications.setNotificationHandler({
 
 let onPermissionDenied: (() => void) | null = null;
 
-export function setNotificationPermissionDeniedHandler(handler: (() => void) | null) {
+export function setNotificationPermissionDeniedHandler(
+  handler: (() => void) | null
+) {
   onPermissionDenied = handler;
 }
 
 function mapSystemStatus(
-  status: Notifications.PermissionStatus,
+  status: Notifications.PermissionStatus
 ): 'granted' | 'denied' | 'unknown' {
   if (status === 'granted') return 'granted';
   if (status === 'denied') return 'denied';
@@ -99,13 +101,17 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 }
 
 export async function cancelAllPeriodReminders(): Promise<void> {
-  await Notifications.cancelScheduledNotificationAsync(PERIOD_REMINDER_IDENTIFIER).catch(() => {
+  await Notifications.cancelScheduledNotificationAsync(
+    PERIOD_REMINDER_IDENTIFIER
+  ).catch(() => {
     // Brak zaplanowanego — ignoruj
   });
 }
 
 /** Natychmiastowe powiadomienie po zapisie okresu — informacja o przewidywanej dacie. */
-export async function sendImmediatePredictionNotice(predictedDate: Date): Promise<void> {
+export async function sendImmediatePredictionNotice(
+  predictedDate: Date
+): Promise<void> {
   const granted = await ensureNotificationPermissionsAuto();
   if (!granted) return;
 
@@ -122,7 +128,9 @@ export async function sendImmediatePredictionNotice(predictedDate: Date): Promis
 }
 
 /** Jedno aktywne przypomnienie — rano w dniu przewidywanego okresu (9:00). */
-export async function schedulePeriodReminder(predictedDate: Date): Promise<void> {
+export async function schedulePeriodReminder(
+  predictedDate: Date
+): Promise<void> {
   const granted = await ensureNotificationPermissionsAuto();
   if (!granted) return;
 

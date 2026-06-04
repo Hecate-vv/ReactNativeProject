@@ -81,49 +81,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await auth.authStateReady();
       await applyAuthUser(auth.currentUser);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Nie udało się przywrócić sesji.');
+      setError(
+        e instanceof Error ? e.message : 'Nie udało się przywrócić sesji.'
+      );
     } finally {
       setIsLoading(false);
     }
   }, [applyAuthUser]);
 
-  const loginWithEmailAction = useCallback(async (email: string, password: string) => {
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      const normalized = email.trim();
-      if (!normalized || !password) {
-        setError('Podaj email i hasło.');
-        return;
+  const loginWithEmailAction = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      setIsSubmitting(true);
+      try {
+        const normalized = email.trim();
+        if (!normalized || !password) {
+          setError('Podaj email i hasło.');
+          return;
+        }
+        await firebaseSignIn(normalized, password);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Wystąpił błąd logowania.');
+      } finally {
+        setIsSubmitting(false);
       }
-      await firebaseSignIn(normalized, password);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Wystąpił błąd logowania.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  const registerWithEmailAction = useCallback(async (email: string, password: string) => {
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      const normalized = email.trim();
-      if (!normalized.includes('@')) {
-        setError('Nieprawidłowy email.');
-        return;
+  const registerWithEmailAction = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      setIsSubmitting(true);
+      try {
+        const normalized = email.trim();
+        if (!normalized.includes('@')) {
+          setError('Nieprawidłowy email.');
+          return;
+        }
+        if (password.length < 6) {
+          setError('Hasło musi mieć min. 6 znaków.');
+          return;
+        }
+        await firebaseRegister(normalized, password);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Wystąpił błąd rejestracji.');
+      } finally {
+        setIsSubmitting(false);
       }
-      if (password.length < 6) {
-        setError('Hasło musi mieć min. 6 znaków.');
-        return;
-      }
-      await firebaseRegister(normalized, password);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Wystąpił błąd rejestracji.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
     setError(null);
@@ -162,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       clearError,
       retry,
-    ],
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

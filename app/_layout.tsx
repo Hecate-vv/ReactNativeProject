@@ -1,4 +1,8 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -69,7 +73,10 @@ function RootStack() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: 'modal', title: 'Modal' }}
+        />
       </Stack>
       <Snackbar
         visible={permissionSnackbar}
@@ -80,10 +87,15 @@ function RootStack() {
           onPress: () => {
             void Linking.openSettings();
           },
-        }}>
+        }}
+      >
         Włącz powiadomienia w ustawieniach telefonu
       </Snackbar>
-      <Snackbar visible={offlineSnackbar} onDismiss={() => setOfflineSnackbar(false)} duration={5000}>
+      <Snackbar
+        visible={offlineSnackbar}
+        onDismiss={() => setOfflineSnackbar(false)}
+        duration={5000}
+      >
         Brak internetu — wyświetlane są dane zapisane lokalnie (cache).
       </Snackbar>
     </>
@@ -100,8 +112,12 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <CycleProvider>
-        <PaperProvider theme={colorScheme === 'dark' ? paperDarkTheme : paperLightTheme}>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <PaperProvider
+          theme={colorScheme === 'dark' ? paperDarkTheme : paperLightTheme}
+        >
+          <ThemeProvider
+            value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+          >
             <RootStack />
             <StatusBar style="auto" />
           </ThemeProvider>

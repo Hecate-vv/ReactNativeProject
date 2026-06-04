@@ -10,7 +10,7 @@ export const PERIOD_COLORS = {
 export function buildCalendarMarkedDates(
   cycles: Cycle[],
   draftStart: string | null,
-  draftEnd: string | null,
+  draftEnd: string | null
 ) {
   return buildPeriodMarkedDates(
     cycles,
@@ -19,6 +19,6 @@ export function buildCalendarMarkedDates(
     PERIOD_COLORS.saved.fill,
     PERIOD_COLORS.saved.text,
     PERIOD_COLORS.draft.fill,
-    PERIOD_COLORS.draft.text,
+    PERIOD_COLORS.draft.text
   );
 }

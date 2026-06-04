@@ -10,7 +10,10 @@ export async function getCachedQuote(dateKey: string): Promise<Quote | null> {
 }
 
 export async function setCachedQuote(dateKey: string, quote: Quote) {
-  await AsyncStorage.setItem(`${CACHE_PREFIX}${dateKey}`, JSON.stringify(quote));
+  await AsyncStorage.setItem(
+    `${CACHE_PREFIX}${dateKey}`,
+    JSON.stringify(quote)
+  );
 }
 
 export function getTodayDateKey(): string {

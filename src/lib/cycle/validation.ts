@@ -2,7 +2,9 @@ import { cycleOverlapsExisting } from '@/lib/cycle/period-range';
 import type { Cycle } from '@/types/cycle';
 import type { PeriodInput, PeriodUpdate } from '@/types/period';
 
-export type ValidationResult = { valid: true } | { valid: false; message: string };
+export type ValidationResult =
+  | { valid: true }
+  | { valid: false; message: string };
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -13,7 +15,9 @@ export function isValidIsoDate(value: string): boolean {
 }
 
 /** Walidacja pól PeriodInput / PeriodUpdate (format dat + relacja start/end). */
-export function validatePeriodInput(input: PeriodInput | PeriodUpdate): ValidationResult {
+export function validatePeriodInput(
+  input: PeriodInput | PeriodUpdate
+): ValidationResult {
   const { startDate, endDate, note } = input;
 
   if (startDate !== undefined) {
@@ -46,14 +50,21 @@ export function validatePeriodInput(input: PeriodInput | PeriodUpdate): Validati
 }
 
 /** Relacja dat przy create/update w Firestore (gdy obie daty są znane). */
-export function validatePeriodDateRange(startDate: string, endDate: string): ValidationResult {
+export function validatePeriodDateRange(
+  startDate: string,
+  endDate: string
+): ValidationResult {
   if (!isValidIsoDate(startDate) || !isValidIsoDate(endDate)) {
-    return { valid: false, message: 'Nieprawidłowy format daty (oczekiwano YYYY-MM-DD).' };
+    return {
+      valid: false,
+      message: 'Nieprawidłowy format daty (oczekiwano YYYY-MM-DD).',
+    };
   }
   if (endDate < startDate) {
     return {
       valid: false,
-      message: 'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',
+      message:
+        'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',
     };
   }
   return { valid: true };
@@ -62,7 +73,7 @@ export function validatePeriodDateRange(startDate: string, endDate: string): Val
 export function validatePeriodRange(
   startDate: string,
   endDate: string | undefined,
-  existingCycles: Cycle[],
+  existingCycles: Cycle[]
 ): ValidationResult {
   const todayIso = new Date().toISOString().split('T')[0];
 
@@ -71,7 +82,10 @@ export function validatePeriodRange(
   }
 
   if (endDate && endDate < startDate) {
-    return { valid: false, message: 'Koniec okresu musi być w tym samym dniu lub później niż start.' };
+    return {
+      valid: false,
+      message: 'Koniec okresu musi być w tym samym dniu lub później niż start.',
+    };
   }
 
   if (endDate && endDate > todayIso) {
@@ -80,7 +94,10 @@ export function validatePeriodRange(
 
   const rangeEnd = endDate ?? startDate;
   if (cycleOverlapsExisting(existingCycles, startDate, rangeEnd)) {
-    return { valid: false, message: 'Ten zakres nachodzi na inny zapisany okres.' };
+    return {
+      valid: false,
+      message: 'Ten zakres nachodzi na inny zapisany okres.',
+    };
   }
 
   return { valid: true };

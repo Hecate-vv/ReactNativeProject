@@ -1,7 +1,14 @@
 import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { ActivityIndicator, Button, Card, Divider, List, Text } from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Card,
+  Divider,
+  List,
+  Text,
+} from 'react-native-paper';
 
 import { OfflineCacheBanner } from '@/components/common/offline-cache-banner';
 import {
@@ -16,7 +23,8 @@ import { formatDaysLabel, formatDisplayDate } from '@/lib/cycle/format';
 import { useCycles } from '@/hooks/use-cycles';
 
 export default function InsightsScreen() {
-  const { cycles, isLoading, error, retry, isFromCache, isOffline } = useCycles();
+  const { cycles, isLoading, error, retry, isFromCache, isOffline } =
+    useCycles();
 
   const stats = useMemo(() => {
     const startDates = cycles.map((c) => parseIsoDate(c.startDate));
@@ -32,7 +40,13 @@ export default function InsightsScreen() {
       daysToNext = daysUntil(predictedNext);
     }
 
-    return { averageCycle, averageBleeding, predictedNext, daysToNext, count: cycles.length };
+    return {
+      averageCycle,
+      averageBleeding,
+      predictedNext,
+      daysToNext,
+      count: cycles.length,
+    };
   }, [cycles]);
 
   if (isLoading && cycles.length === 0) {
@@ -57,80 +71,96 @@ export default function InsightsScreen() {
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.flex}>
-    <FlatList
-      style={styles.list}
-      contentContainerStyle={styles.container}
-      data={cycles}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={
-        <>
-          <Text variant="headlineMedium">Statystyki</Text>
-          <Text style={styles.subtle}>Na podstawie dat startu okresów z kalendarza.</Text>
-          <OfflineCacheBanner isFromCache={isFromCache} isOffline={isOffline} />
+      <FlatList
+        style={styles.list}
+        contentContainerStyle={styles.container}
+        data={cycles}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <>
+            <Text variant="headlineMedium">Statystyki</Text>
+            <Text style={styles.subtle}>
+              Na podstawie dat startu okresów z kalendarza.
+            </Text>
+            <OfflineCacheBanner
+              isFromCache={isFromCache}
+              isOffline={isOffline}
+            />
 
-          {error ? (
-            <Card style={styles.errorCard}>
-              <Card.Content style={styles.errorCardContent}>
-                <Text style={styles.errorText}>{error}</Text>
-                <Button mode="contained" onPress={retry}>
-                  Spróbuj ponownie
-                </Button>
+            {error ? (
+              <Card style={styles.errorCard}>
+                <Card.Content style={styles.errorCardContent}>
+                  <Text style={styles.errorText}>{error}</Text>
+                  <Button mode="contained" onPress={retry}>
+                    Spróbuj ponownie
+                  </Button>
+                </Card.Content>
+              </Card>
+            ) : null}
+
+            <Card style={styles.card}>
+              <Card.Content style={styles.statsGrid}>
+                <StatBlock
+                  label="Zapisane okresy"
+                  value={String(stats.count)}
+                />
+                <StatBlock
+                  label="Średni cykl"
+                  value={
+                    stats.averageCycle !== null
+                      ? `${stats.averageCycle} dni`
+                      : 'min. 2 wpisy'
+                  }
+                />
+                <StatBlock
+                  label="Średnie krwawienie"
+                  value={
+                    stats.averageBleeding !== null
+                      ? `${stats.averageBleeding} dni`
+                      : 'dodaj koniec okresu'
+                  }
+                />
+                <StatBlock
+                  label="Przewidywany okres"
+                  value={
+                    stats.predictedNext
+                      ? formatDisplayDate(stats.predictedNext)
+                      : stats.count === 0
+                        ? 'brak danych'
+                        : 'min. 2 wpisy'
+                  }
+                  hint={
+                    stats.daysToNext !== null
+                      ? formatDaysLabel(stats.daysToNext)
+                      : undefined
+                  }
+                />
               </Card.Content>
             </Card>
-          ) : null}
 
-          <Card style={styles.card}>
-            <Card.Content style={styles.statsGrid}>
-              <StatBlock label="Zapisane okresy" value={String(stats.count)} />
-              <StatBlock
-                label="Średni cykl"
-                value={
-                  stats.averageCycle !== null ? `${stats.averageCycle} dni` : 'min. 2 wpisy'
-                }
-              />
-              <StatBlock
-                label="Średnie krwawienie"
-                value={
-                  stats.averageBleeding !== null
-                    ? `${stats.averageBleeding} dni`
-                    : 'dodaj koniec okresu'
-                }
-              />
-              <StatBlock
-                label="Przewidywany okres"
-                value={
-                  stats.predictedNext
-                    ? formatDisplayDate(stats.predictedNext)
-                    : stats.count === 0
-                      ? 'brak danych'
-                      : 'min. 2 wpisy'
-                }
-                hint={
-                  stats.daysToNext !== null ? formatDaysLabel(stats.daysToNext) : undefined
-                }
-              />
-            </Card.Content>
-          </Card>
-
-          {cycles.length > 0 && (
-            <>
-              <Divider style={styles.divider} />
-              <Text variant="titleMedium">Historia okresów</Text>
-            </>
-          )}
-        </>
-      }
-      ListEmptyComponent={
-        <Text style={styles.subtle}>Dodaj okresy w zakładce Kalendarz, aby zobaczyć statystyki.</Text>
-      }
-      renderItem={({ item }) => (
-        <List.Item
-          title={formatCycleRange(item)}
-          description={item.notes ?? 'Okres menstruacyjny'}
-          left={(props) => <List.Icon {...props} icon="chart-timeline-variant" />}
-        />
-      )}
-    />
+            {cycles.length > 0 && (
+              <>
+                <Divider style={styles.divider} />
+                <Text variant="titleMedium">Historia okresów</Text>
+              </>
+            )}
+          </>
+        }
+        ListEmptyComponent={
+          <Text style={styles.subtle}>
+            Dodaj okresy w zakładce Kalendarz, aby zobaczyć statystyki.
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <List.Item
+            title={formatCycleRange(item)}
+            description={item.notes ?? 'Okres menstruacyjny'}
+            left={(props) => (
+              <List.Icon {...props} icon="chart-timeline-variant" />
+            )}
+          />
+        )}
+      />
     </Animated.View>
   );
 }
@@ -165,7 +195,13 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   list: { flex: 1 },
   container: { padding: 16, gap: 8, paddingBottom: 32 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16, gap: 12 },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
   subtle: { opacity: 0.75, marginBottom: 8 },
   card: { marginVertical: 8 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },

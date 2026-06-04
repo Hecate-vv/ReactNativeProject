@@ -1,4 +1,8 @@
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import {
+  createAudioPlayer,
+  setAudioModeAsync,
+  type AudioPlayer,
+} from 'expo-audio';
 
 const UI_SFX = require('../../../assets/sounds/ui-confirm.wav');
 

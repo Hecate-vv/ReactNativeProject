@@ -1,7 +1,19 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
-import { Button, HelperText, Text, TextInput, useTheme } from 'react-native-paper';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import {
+  Button,
+  HelperText,
+  Text,
+  TextInput,
+  useTheme,
+} from 'react-native-paper';
 
 import { useAuth } from '@/hooks/use-auth';
 
@@ -27,10 +39,13 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}>
+      style={styles.container}
+    >
       <View style={styles.card}>
         <Text variant="headlineMedium">Rejestracja</Text>
-        <Text style={styles.subtle}>Utwórz konto w Firebase — email i hasło (min. 6 znaków).</Text>
+        <Text style={styles.subtle}>
+          Utwórz konto w Firebase — email i hasło (min. 6 znaków).
+        </Text>
 
         <TextInput
           mode="outlined"
@@ -57,7 +72,10 @@ export default function RegisterScreen() {
             setPassword(t);
           }}
         />
-        <HelperText type={passwordError ? 'error' : 'info'} visible={!!password}>
+        <HelperText
+          type={passwordError ? 'error' : 'info'}
+          visible={!!password}
+        >
           {passwordError ?? ' '}
         </HelperText>
 
@@ -69,14 +87,22 @@ export default function RegisterScreen() {
           mode="contained"
           loading={isSubmitting}
           onPress={() => registerWithEmail(email, password)}
-          disabled={isSubmitting || !!emailError || !!passwordError || !email || !password}>
+          disabled={
+            isSubmitting ||
+            !!emailError ||
+            !!passwordError ||
+            !email ||
+            !password
+          }
+        >
           Załóż konto
         </Button>
 
         <Pressable
           onPress={() => router.push('/(auth)/login')}
           style={styles.linkPressable}
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Text style={{ color: theme.colors.primary, textAlign: 'center' }}>
             Masz konto? Zaloguj się
           </Text>
@@ -92,4 +118,3 @@ const styles = StyleSheet.create({
   subtle: { opacity: 0.75 },
   linkPressable: { alignSelf: 'center', paddingVertical: 8 },
 });
-

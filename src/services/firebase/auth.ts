@@ -29,18 +29,32 @@ export function mapAuthError(error: unknown): string {
   }
 }
 
-export async function registerWithEmail(email: string, password: string): Promise<User> {
+export async function registerWithEmail(
+  email: string,
+  password: string
+): Promise<User> {
   try {
-    const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    const result = await createUserWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
     return result.user;
   } catch (error) {
     throw new Error(mapAuthError(error));
   }
 }
 
-export async function signInWithEmail(email: string, password: string): Promise<User> {
+export async function signInWithEmail(
+  email: string,
+  password: string
+): Promise<User> {
   try {
-    const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+    const result = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    );
     return result.user;
   } catch (error) {
     throw new Error(mapAuthError(error));

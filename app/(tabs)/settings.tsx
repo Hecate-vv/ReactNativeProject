@@ -7,8 +7,11 @@ import { requestNotificationPermissionsManual } from '@/services/notifications/s
 
 export default function SettingsScreen() {
   const { user, logout, isSubmitting } = useAuth();
-  const [isRequestingNotifications, setIsRequestingNotifications] = useState(false);
-  const [notificationStatus, setNotificationStatus] = useState<string | null>(null);
+  const [isRequestingNotifications, setIsRequestingNotifications] =
+    useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<string | null>(
+    null
+  );
 
   const handleEnableReminders = useCallback(async () => {
     setIsRequestingNotifications(true);
@@ -18,7 +21,7 @@ export default function SettingsScreen() {
       setNotificationStatus(
         granted
           ? 'Powiadomienia włączone. Przypomnienie zaplanuje się po zapisie cyklu.'
-          : 'Odmowa uprawnień — włącz powiadomienia w ustawieniach systemu.',
+          : 'Odmowa uprawnień — włącz powiadomienia w ustawieniach systemu.'
       );
     } finally {
       setIsRequestingNotifications(false);
@@ -38,12 +41,20 @@ export default function SettingsScreen() {
         mode="contained-tonal"
         loading={isRequestingNotifications}
         disabled={isRequestingNotifications}
-        onPress={() => void handleEnableReminders()}>
+        onPress={() => void handleEnableReminders()}
+      >
         Włącz przypomnienia
       </Button>
-      {notificationStatus ? <Text style={styles.status}>{notificationStatus}</Text> : null}
+      {notificationStatus ? (
+        <Text style={styles.status}>{notificationStatus}</Text>
+      ) : null}
 
-      <Button mode="outlined" loading={isSubmitting} disabled={isSubmitting} onPress={() => logout()}>
+      <Button
+        mode="outlined"
+        loading={isSubmitting}
+        disabled={isSubmitting}
+        onPress={() => logout()}
+      >
         Wyloguj
       </Button>
     </View>

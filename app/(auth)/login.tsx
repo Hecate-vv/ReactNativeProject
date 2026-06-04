@@ -1,7 +1,19 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
-import { Button, HelperText, Text, TextInput, useTheme } from 'react-native-paper';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import {
+  Button,
+  HelperText,
+  Text,
+  TextInput,
+  useTheme,
+} from 'react-native-paper';
 
 import { useAuth } from '@/hooks/use-auth';
 
@@ -21,10 +33,13 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}>
+      style={styles.container}
+    >
       <View style={styles.card}>
         <Text variant="headlineMedium">Logowanie</Text>
-        <Text style={styles.subtle}>Zaloguj się kontem Firebase (email i hasło).</Text>
+        <Text style={styles.subtle}>
+          Zaloguj się kontem Firebase (email i hasło).
+        </Text>
 
         <TextInput
           mode="outlined"
@@ -60,14 +75,16 @@ export default function LoginScreen() {
           mode="contained"
           loading={isSubmitting}
           onPress={() => loginWithEmail(email, password)}
-          disabled={isSubmitting || !!emailError || !email.trim() || !password}>
+          disabled={isSubmitting || !!emailError || !email.trim() || !password}
+        >
           Zaloguj
         </Button>
 
         <Pressable
           onPress={() => router.push('/(auth)/register')}
           style={styles.linkPressable}
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Text style={{ color: theme.colors.primary, textAlign: 'center' }}>
             Nie masz konta? Zarejestruj się
           </Text>
@@ -83,4 +100,3 @@ const styles = StyleSheet.create({
   subtle: { opacity: 0.75 },
   linkPressable: { alignSelf: 'center', paddingVertical: 8 },
 });
-

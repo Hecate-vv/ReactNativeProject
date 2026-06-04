@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useNetwork } from '@/hooks/use-network';
-import { getCachedQuote, getTodayDateKey, setCachedQuote } from '@/services/zenquotes/cache';
+import {
+  getCachedQuote,
+  getTodayDateKey,
+  setCachedQuote,
+} from '@/services/zenquotes/cache';
 import { fetchDailyQuote } from '@/services/zenquotes/client';
 import type { Quote } from '@/types/quote';
 
@@ -55,5 +59,12 @@ export function useDailyQuote() {
     load();
   }, [load]);
 
-  return { data, isLoading, error, isFromCache, isOffline: !isConnected, retry: load };
+  return {
+    data,
+    isLoading,
+    error,
+    isFromCache,
+    isOffline: !isConnected,
+    retry: load,
+  };
 }

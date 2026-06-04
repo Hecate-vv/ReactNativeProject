@@ -32,10 +32,15 @@ function periodDoc(userId: string, periodId: string) {
 export async function fetchPeriods(userId: string): Promise<Period[]> {
   const q = query(periodsCollection(userId), orderBy('startDate', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((document) => mapDocToPeriod(document.id, document.data()));
+  return snapshot.docs.map((document) =>
+    mapDocToPeriod(document.id, document.data())
+  );
 }
 
-export async function createPeriod(userId: string, input: PeriodInput): Promise<Period> {
+export async function createPeriod(
+  userId: string,
+  input: PeriodInput
+): Promise<Period> {
   const rangeCheck = validatePeriodDateRange(input.startDate, input.endDate);
   if (!rangeCheck.valid) {
     throw new Error(rangeCheck.message);
@@ -60,7 +65,7 @@ export async function createPeriod(userId: string, input: PeriodInput): Promise<
 export async function updatePeriod(
   userId: string,
   periodId: string,
-  input: PeriodUpdate,
+  input: PeriodUpdate
 ): Promise<void> {
   const ref = periodDoc(userId, periodId);
   const snapshot = await getDoc(ref);
@@ -95,7 +100,10 @@ export async function updatePeriod(
   await updateDoc(ref, fields);
 }
 
-export async function deletePeriod(userId: string, periodId: string): Promise<void> {
+export async function deletePeriod(
+  userId: string,
+  periodId: string
+): Promise<void> {
   await deleteDoc(periodDoc(userId, periodId));
 }
 

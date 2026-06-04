@@ -4,8 +4,10 @@ import type { Auth } from 'firebase/auth';
 import { getAuth, initializeAuth } from 'firebase/auth';
 
 type ReactNativePersistenceFactory = (
-  storage: typeof AsyncStorage,
-) => Parameters<typeof initializeAuth>[1] extends { persistence?: infer P } ? P : never;
+  storage: typeof AsyncStorage
+) => Parameters<typeof initializeAuth>[1] extends { persistence?: infer P }
+  ? P
+  : never;
 
 // Metro resolves @firebase/auth → dist/rn; typy webowego `firebase/auth` tego nie eksportują.
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- RN-only export z @firebase/auth

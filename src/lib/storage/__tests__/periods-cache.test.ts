@@ -39,7 +39,10 @@ describe('periods-cache', () => {
   });
 
   it('returns null for invalid period shape', async () => {
-    await AsyncStorage.setItem('@cycles_cache_v1_bad', JSON.stringify([{ id: 1 }]));
+    await AsyncStorage.setItem(
+      '@cycles_cache_v1_bad',
+      JSON.stringify([{ id: 1 }])
+    );
     expect(await getCachedPeriods('bad')).toBeNull();
   });
 });

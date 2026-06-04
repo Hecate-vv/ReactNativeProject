@@ -19,11 +19,12 @@ import { useCycles } from '@/hooks/use-cycles';
 function isViewingSavedCycle(
   cycle: { startDate: string; endDate?: string } | undefined,
   draftStart: string | null,
-  draftEnd: string | null,
+  draftEnd: string | null
 ): boolean {
   if (!cycle || !draftStart) return false;
   return (
-    cycle.startDate === draftStart && (cycle.endDate ?? null) === (draftEnd ?? null)
+    cycle.startDate === draftStart &&
+    (cycle.endDate ?? null) === (draftEnd ?? null)
   );
 }
 
@@ -87,7 +88,7 @@ export default function CalendarScreen() {
       setDraftStart(iso);
       setDraftEnd(null);
     },
-    [cycles, draftStart, draftEnd, openSavedCycle],
+    [cycles, draftStart, draftEnd, openSavedCycle]
   );
 
   const savedCycle = useMemo(() => {
@@ -100,7 +101,11 @@ export default function CalendarScreen() {
   const handleSave = async () => {
     if (!draftStart) return;
     setFormError(null);
-    const ok = await addCycle(draftStart, draftEnd ?? undefined, notes.trim() || undefined);
+    const ok = await addCycle(
+      draftStart,
+      draftEnd ?? undefined,
+      notes.trim() || undefined
+    );
     if (ok) clearDraft();
   };
 
@@ -128,7 +133,8 @@ export default function CalendarScreen() {
       return `Zapisany okres: ${formatCycleRange(savedCycle)}`;
     }
     if (!draftStart) return 'Krok 1: wybierz dzień startu okresu.';
-    if (!draftEnd) return 'Krok 2: wybierz dzień końca (albo zapisz sam start).';
+    if (!draftEnd)
+      return 'Krok 2: wybierz dzień końca (albo zapisz sam start).';
     return `Podgląd: ${draftStart} → ${draftEnd}`;
   }, [draftStart, draftEnd, viewingSaved, savedCycle]);
 
@@ -136,7 +142,8 @@ export default function CalendarScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">Kalendarz</Text>
       <Text style={styles.subtle}>
-        Start + koniec zaznaczają cały okres. Kliknij zapisany dzień, aby usunąć wpis.
+        Start + koniec zaznaczają cały okres. Kliknij zapisany dzień, aby usunąć
+        wpis.
       </Text>
       <OfflineCacheBanner isFromCache={isFromCache} isOffline={isOffline} />
 
@@ -160,7 +167,9 @@ export default function CalendarScreen() {
           <Card.Content style={styles.form}>
             <Text variant="titleSmall">
               Start: {draftStart}
-              {draftEnd ? `  ·  Koniec: ${draftEnd}` : '  ·  Koniec: (nie wybrano)'}
+              {draftEnd
+                ? `  ·  Koniec: ${draftEnd}`
+                : '  ·  Koniec: (nie wybrano)'}
             </Text>
 
             {viewingSaved && savedCycle ? (
@@ -170,7 +179,12 @@ export default function CalendarScreen() {
                   description={savedCycle.notes ?? formatCycleRange(savedCycle)}
                   left={(props) => <List.Icon {...props} icon="water" />}
                 />
-                <Button mode="outlined" textColor="#c62828" onPress={handleDelete} disabled={isLoading}>
+                <Button
+                  mode="outlined"
+                  textColor="#c62828"
+                  onPress={handleDelete}
+                  disabled={isLoading}
+                >
                   Usuń ten okres
                 </Button>
                 <Button mode="text" onPress={clearDraft}>
@@ -188,7 +202,11 @@ export default function CalendarScreen() {
                 <HelperText type="error" visible={!!formError || !!error}>
                   {formError ?? error ?? ' '}
                 </HelperText>
-                <Button mode="contained" onPress={handleSave} disabled={isLoading}>
+                <Button
+                  mode="contained"
+                  onPress={handleSave}
+                  disabled={isLoading}
+                >
                   Zapisz okres
                 </Button>
                 <Button mode="text" onPress={clearDraft}>

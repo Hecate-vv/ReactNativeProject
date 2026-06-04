@@ -12,7 +12,8 @@ export const fromIsoDate = (s: string) => parseIsoDate(s);
 const dateFormatter = new Intl.DateTimeFormat('pl-PL', { dateStyle: 'medium' });
 
 export function formatDisplayDate(isoOrDate: string | Date): string {
-  const date = typeof isoOrDate === 'string' ? fromIsoDate(isoOrDate) : isoOrDate;
+  const date =
+    typeof isoOrDate === 'string' ? fromIsoDate(isoOrDate) : isoOrDate;
   return dateFormatter.format(date);
 }
 

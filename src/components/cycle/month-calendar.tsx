@@ -26,7 +26,7 @@ export function MonthCalendar({
 
   const markedDates = useMemo(
     () => buildCalendarMarkedDates(cycles, draftStart, draftEnd),
-    [cycles, draftStart, draftEnd],
+    [cycles, draftStart, draftEnd]
   );
 
   const calendarTheme = useMemo(
@@ -45,7 +45,7 @@ export function MonthCalendar({
       textMonthFontWeight: '700' as const,
       textDayHeaderFontWeight: '600' as const,
     }),
-    [theme],
+    [theme]
   );
 
   const current = visibleMonth ?? draftEnd ?? draftStart ?? undefined;

@@ -15,15 +15,22 @@ export function calculateAverageCycleLength(startDates: Date[]): number | null {
   return Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length);
 }
 
-export function predictNextPeriod(lastStart: Date, averageLengthDays: number): Date {
+export function predictNextPeriod(
+  lastStart: Date,
+  averageLengthDays: number
+): Date {
   const next = new Date(lastStart);
   next.setDate(next.getDate() + averageLengthDays);
   return next;
 }
 
-export function getLatestCycleStart(cycles: { startDate: string }[]): Date | null {
+export function getLatestCycleStart(
+  cycles: { startDate: string }[]
+): Date | null {
   if (cycles.length === 0) return null;
-  const sorted = [...cycles].sort((a, b) => b.startDate.localeCompare(a.startDate));
+  const sorted = [...cycles].sort((a, b) =>
+    b.startDate.localeCompare(a.startDate)
+  );
   return parseIsoDate(sorted[0].startDate);
 }
 
@@ -36,14 +43,17 @@ export function daysUntil(date: Date, from = new Date()): number {
 
 /** Średnia długość krwawienia (gdy wpisy mają endDate). */
 export function calculateAverageBleedingLength(
-  cycles: { startDate: string; endDate?: string }[],
+  cycles: { startDate: string; endDate?: string }[]
 ): number | null {
   const lengths = cycles
     .filter((c) => c.endDate)
     .map((c) => {
       const start = parseIsoDate(c.startDate);
       const end = parseIsoDate(c.endDate!);
-      return Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return (
+        Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) +
+        1
+      );
     });
 
   if (lengths.length === 0) return null;

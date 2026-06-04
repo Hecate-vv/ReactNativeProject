@@ -26,7 +26,13 @@ export default function HomeScreen() {
     isFromCache: cyclesFromCache,
     isOffline,
   } = useCycles();
-  const { data: quote, isLoading, error, retry, isFromCache: quoteFromCache } = useDailyQuote();
+  const {
+    data: quote,
+    isLoading,
+    error,
+    retry,
+    isFromCache: quoteFromCache,
+  } = useDailyQuote();
 
   const cycleInfo = useMemo(() => {
     const startDates = cycles.map((c) => parseIsoDate(c.startDate));
@@ -47,7 +53,9 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text variant="headlineMedium">Home</Text>
-      <Text style={styles.subtle}>Cześć, {user?.email ?? 'użytkowniczko'}!</Text>
+      <Text style={styles.subtle}>
+        Cześć, {user?.email ?? 'użytkowniczko'}!
+      </Text>
 
       <OfflineCacheBanner isFromCache={quoteFromCache} isOffline={isOffline} />
       <DailyQuoteCard
@@ -61,7 +69,10 @@ export default function HomeScreen() {
       <Card style={styles.card}>
         <Card.Title title="Twój cykl" />
         <Card.Content>
-          <OfflineCacheBanner isFromCache={cyclesFromCache} isOffline={isOffline} />
+          <OfflineCacheBanner
+            isFromCache={cyclesFromCache}
+            isOffline={isOffline}
+          />
           {cyclesLoading && cycles.length === 0 ? (
             <ActivityIndicator animating style={styles.cycleLoader} />
           ) : cyclesError && cycles.length === 0 ? (
@@ -76,7 +87,8 @@ export default function HomeScreen() {
               <Text>{cycleInfo}</Text>
               {cycles.length > 0 && (
                 <Text style={styles.subtle}>
-                  Ostatni start: {formatDisplayDate(getLatestCycleStart(cycles)!)}
+                  Ostatni start:{' '}
+                  {formatDisplayDate(getLatestCycleStart(cycles)!)}
                 </Text>
               )}
             </>

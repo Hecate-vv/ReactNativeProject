@@ -44,7 +44,10 @@ export const TODAY_KEYWORD_QUOTES: Quote[] = [
   },
 ];
 
-export function pickDailyQuoteFromList(quotes: Quote[], dateKey: string): Quote {
+export function pickDailyQuoteFromList(
+  quotes: Quote[],
+  dateKey: string
+): Quote {
   if (quotes.length === 0) {
     return { text: 'We have only today.', author: 'Unknown' };
   }

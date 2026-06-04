@@ -52,7 +52,9 @@ export const DailyQuoteCard = memo(function DailyQuoteCard({
         <Card.Title
           title="Cytat dnia"
           subtitle={
-            isFromCache ? 'ZenQuotes · zapisane lokalnie' : 'ZenQuotes · api/today'
+            isFromCache
+              ? 'ZenQuotes · zapisane lokalnie'
+              : 'ZenQuotes · api/today'
           }
         />
         <Card.Content style={styles.content}>

@@ -31,11 +31,16 @@ function parsePeriods(raw: string): Period[] | null {
   }
 }
 
-export async function cachePeriods(userId: string, periods: Period[]): Promise<void> {
+export async function cachePeriods(
+  userId: string,
+  periods: Period[]
+): Promise<void> {
   await AsyncStorage.setItem(cacheKey(userId), JSON.stringify(periods));
 }
 
-export async function getCachedPeriods(userId: string): Promise<Period[] | null> {
+export async function getCachedPeriods(
+  userId: string
+): Promise<Period[] | null> {
   const raw = await AsyncStorage.getItem(cacheKey(userId));
   if (!raw) return null;
   return parsePeriods(raw);

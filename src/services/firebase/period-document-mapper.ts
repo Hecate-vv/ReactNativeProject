@@ -12,11 +12,16 @@ export function timestampToDateOnly(timestamp: TimestampLike): string {
   return `${y}-${m}-${day}`;
 }
 
-export function timestampToIso(timestamp: TimestampLike | undefined): string | undefined {
+export function timestampToIso(
+  timestamp: TimestampLike | undefined
+): string | undefined {
   return timestamp?.toDate().toISOString();
 }
 
-export function mapDocToPeriod(id: string, data: Record<string, unknown>): Period {
+export function mapDocToPeriod(
+  id: string,
+  data: Record<string, unknown>
+): Period {
   const startTs = data.startDate as TimestampLike | undefined;
   const endTs = data.endDate as TimestampLike | undefined;
   const createdTs = data.createdAt as TimestampLike | undefined;

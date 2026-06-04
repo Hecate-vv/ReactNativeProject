@@ -15,15 +15,21 @@ type FirebaseExtra = {
   appId?: string;
 };
 
-const fromExtra = Constants.expoConfig?.extra?.firebase as FirebaseExtra | undefined;
+const fromExtra = Constants.expoConfig?.extra?.firebase as
+  | FirebaseExtra
+  | undefined;
 
 const firebaseConfig = {
   apiKey: fromExtra?.apiKey ?? process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: fromExtra?.authDomain ?? process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: fromExtra?.projectId ?? process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: fromExtra?.storageBucket ?? process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  authDomain:
+    fromExtra?.authDomain ?? process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId:
+    fromExtra?.projectId ?? process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket:
+    fromExtra?.storageBucket ?? process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId:
-    fromExtra?.messagingSenderId ?? process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    fromExtra?.messagingSenderId ??
+    process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: fromExtra?.appId ?? process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
@@ -35,10 +41,13 @@ if (__DEV__) {
     console.error(
       '[Firebase] Brakuje konfiguracji:',
       missing.join(', '),
-      '→ sprawdź plik .env i uruchom: npx expo start -c',
+      '→ sprawdź plik .env i uruchom: npx expo start -c'
     );
   } else if (firebaseConfig.apiKey) {
-    console.log('[Firebase] apiKey wczytany:', `${firebaseConfig.apiKey.slice(0, 8)}...`);
+    console.log(
+      '[Firebase] apiKey wczytany:',
+      `${firebaseConfig.apiKey.slice(0, 8)}...`
+    );
   }
 }
 

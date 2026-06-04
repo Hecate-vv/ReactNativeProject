@@ -13,7 +13,9 @@ function parseQuote(data: ZenQuoteResponse): Quote {
 }
 
 function isErrorResponse(data: ZenQuoteResponse): boolean {
-  return data.a === 'zenquotes.io' || data.q.toLowerCase().includes('unauthorized');
+  return (
+    data.a === 'zenquotes.io' || data.q.toLowerCase().includes('unauthorized')
+  );
 }
 
 /** Darmowy endpoint — jeden cytat dziennie (bez klucza API). */

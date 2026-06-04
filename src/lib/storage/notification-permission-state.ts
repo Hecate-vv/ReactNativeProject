@@ -3,7 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const STORAGE_KEY = '@notifications_permission_state_v1';
 const PROMPT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
-export type NotificationPermissionStoredStatus = 'granted' | 'denied' | 'unknown';
+export type NotificationPermissionStoredStatus =
+  | 'granted'
+  | 'denied'
+  | 'unknown';
 
 export type NotificationPermissionState = {
   status: NotificationPermissionStoredStatus;
@@ -32,13 +35,15 @@ export async function getNotificationPermissionState(): Promise<NotificationPerm
 
 export async function setNotificationPermissionState(
   status: NotificationPermissionStoredStatus,
-  lastPromptAt: string | null = null,
+  lastPromptAt: string | null = null
 ): Promise<void> {
   const payload: NotificationPermissionState = { status, lastPromptAt };
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
 
-export function isNotificationPromptCooldownActive(lastPromptAt: string | null): boolean {
+export function isNotificationPromptCooldownActive(
+  lastPromptAt: string | null
+): boolean {
   if (!lastPromptAt) return false;
   const elapsed = Date.now() - new Date(lastPromptAt).getTime();
   return elapsed < PROMPT_COOLDOWN_MS;

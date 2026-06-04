@@ -21,7 +21,7 @@ export function periodsToCycles(periods: Period[]): Cycle[] {
 export function cycleToPeriodInput(
   startDate: string,
   endDate?: string,
-  notes?: string,
+  notes?: string
 ): PeriodInput {
   return {
     startDate,

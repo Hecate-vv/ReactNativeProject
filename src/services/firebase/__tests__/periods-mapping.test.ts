@@ -9,7 +9,9 @@ function mockTs(isoLocal: string) {
 
 describe('timestampToDateOnly', () => {
   it('formats local calendar date from Timestamp-like value', () => {
-    expect(timestampToDateOnly(mockTs('2026-06-03T12:00:00'))).toBe('2026-06-03');
+    expect(timestampToDateOnly(mockTs('2026-06-03T12:00:00'))).toBe(
+      '2026-06-03'
+    );
   });
 });
 
@@ -33,7 +35,7 @@ describe('mapDocToPeriod', () => {
 
   it('throws when timestamps are missing', () => {
     expect(() => mapDocToPeriod('x', { note: '' })).toThrow(
-      'Nieprawidłowy dokument okresu w Firestore.',
+      'Nieprawidłowy dokument okresu w Firestore.'
     );
   });
 });

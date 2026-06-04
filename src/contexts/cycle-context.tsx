@@ -11,9 +11,16 @@ import React, {
 
 import { useAuth } from '@/hooks/use-auth';
 import { useNetwork } from '@/hooks/use-network';
-import { cycleToPeriodInput, periodToCycle, periodsToCycles } from '@/lib/cycle/period-mapper';
+import {
+  cycleToPeriodInput,
+  periodToCycle,
+  periodsToCycles,
+} from '@/lib/cycle/period-mapper';
 import { getPredictedNextPeriodDate } from '@/lib/cycle/predict-next-from-cycles';
-import { validatePeriodInput, validatePeriodRange } from '@/lib/cycle/validation';
+import {
+  validatePeriodInput,
+  validatePeriodRange,
+} from '@/lib/cycle/validation';
 import { cachePeriods, getCachedPeriods } from '@/lib/storage/periods-cache';
 import { playUiSfx } from '@/services/audio/sfx';
 import { mapFirestoreError } from '@/services/firebase/map-firebase-error';
@@ -42,7 +49,10 @@ type CycleState = {
 
 type CycleAction =
   | { type: 'FETCH_START' }
-  | { type: 'FETCH_SUCCESS'; payload: { cycles: Cycle[]; isFromCache: boolean } }
+  | {
+      type: 'FETCH_SUCCESS';
+      payload: { cycles: Cycle[]; isFromCache: boolean };
+    }
   | { type: 'FETCH_ERROR'; payload: string }
   | { type: 'SET_CYCLES'; payload: { cycles: Cycle[]; isFromCache: boolean } };
 
@@ -79,7 +89,11 @@ type CycleContextValue = CycleState & {
   /** Alias `cycles` — spójny z `AsyncState.data` (kryterium 7). */
   data: Cycle[];
   isOffline: boolean;
-  addCycle: (startDate: string, endDate?: string, notes?: string) => Promise<boolean>;
+  addCycle: (
+    startDate: string,
+    endDate?: string,
+    notes?: string
+  ) => Promise<boolean>;
   removeCycle: (id: string) => Promise<void>;
   retry: () => void;
 };
@@ -112,25 +126,37 @@ export function CycleProvider({ children }: { children: ReactNode }) {
     isFromCache: false,
   });
 
-  const applyCachedPeriods = useCallback(async (userId: string): Promise<boolean> => {
-    const cached = await getCachedPeriods(userId);
-    if (cached === null) {
-      return false;
-    }
-    const cycles = applyPeriodsToCycles(cached);
-    dispatch({ type: 'FETCH_SUCCESS', payload: { cycles, isFromCache: true } });
-    await syncPeriodReminder(cycles);
-    return true;
-  }, []);
+  const applyCachedPeriods = useCallback(
+    async (userId: string): Promise<boolean> => {
+      const cached = await getCachedPeriods(userId);
+      if (cached === null) {
+        return false;
+      }
+      const cycles = applyPeriodsToCycles(cached);
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: { cycles, isFromCache: true },
+      });
+      await syncPeriodReminder(cycles);
+      return true;
+    },
+    []
+  );
 
-  const persistCache = useCallback(async (userId: string, periods: Period[]) => {
-    await cachePeriods(userId, periods);
-  }, []);
+  const persistCache = useCallback(
+    async (userId: string, periods: Period[]) => {
+      await cachePeriods(userId, periods);
+    },
+    []
+  );
 
   const refresh = useCallback(async () => {
     const userId = user?.uid;
     if (!userId) {
-      dispatch({ type: 'FETCH_SUCCESS', payload: { cycles: [], isFromCache: false } });
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: { cycles: [], isFromCache: false },
+      });
       return;
     }
 
@@ -151,7 +177,10 @@ export function CycleProvider({ children }: { children: ReactNode }) {
       const periods = await fetchPeriods(userId);
       await persistCache(userId, periods);
       const cycles = applyPeriodsToCycles(periods);
-      dispatch({ type: 'FETCH_SUCCESS', payload: { cycles, isFromCache: false } });
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: { cycles, isFromCache: false },
+      });
       await syncPeriodReminder(cycles);
     } catch (error) {
       const loaded = await applyCachedPeriods(userId);
@@ -176,9 +205,16 @@ export function CycleProvider({ children }: { children: ReactNode }) {
   }, [isConnected]);
 
   const addCycle = useCallback(
-    async (startDate: string, endDate?: string, notes?: string): Promise<boolean> => {
+    async (
+      startDate: string,
+      endDate?: string,
+      notes?: string
+    ): Promise<boolean> => {
       if (!user) {
-        dispatch({ type: 'FETCH_ERROR', payload: 'Musisz być zalogowana, aby zapisać okres.' });
+        dispatch({
+          type: 'FETCH_ERROR',
+          payload: 'Musisz być zalogowana, aby zapisać okres.',
+        });
         return false;
       }
 
@@ -209,15 +245,26 @@ export function CycleProvider({ children }: { children: ReactNode }) {
       try {
         const period = await createPeriod(user.uid, periodInput);
         const cycle = periodToCycle(period);
-        const next = sortCycles([cycle, ...state.cycles.filter((c) => c.id !== cycle.id)]);
-        dispatch({ type: 'SET_CYCLES', payload: { cycles: next, isFromCache: false } });
+        const next = sortCycles([
+          cycle,
+          ...state.cycles.filter((c) => c.id !== cycle.id),
+        ]);
+        dispatch({
+          type: 'SET_CYCLES',
+          payload: { cycles: next, isFromCache: false },
+        });
 
         const periods = await fetchPeriods(user.uid);
         await persistCache(user.uid, periods);
         const synced = applyPeriodsToCycles(periods);
-        dispatch({ type: 'SET_CYCLES', payload: { cycles: synced, isFromCache: false } });
+        dispatch({
+          type: 'SET_CYCLES',
+          payload: { cycles: synced, isFromCache: false },
+        });
 
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success
+        );
         void playUiSfx();
 
         const predicted = getPredictedNextPeriodDate(synced);
@@ -235,7 +282,7 @@ export function CycleProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
-    [user, state.cycles, assertCanMutate, persistCache],
+    [user, state.cycles, assertCanMutate, persistCache]
   );
 
   const removeCycle = useCallback(
@@ -260,14 +307,17 @@ export function CycleProvider({ children }: { children: ReactNode }) {
         const periods = await fetchPeriods(user.uid);
         await persistCache(user.uid, periods);
         const synced = applyPeriodsToCycles(periods);
-        dispatch({ type: 'SET_CYCLES', payload: { cycles: synced, isFromCache: false } });
+        dispatch({
+          type: 'SET_CYCLES',
+          payload: { cycles: synced, isFromCache: false },
+        });
         void playUiSfx();
         await syncPeriodReminder(synced);
       } catch (error) {
         dispatch({ type: 'FETCH_ERROR', payload: mapFirestoreError(error) });
       }
     },
-    [user, assertCanMutate, persistCache],
+    [user, assertCanMutate, persistCache]
   );
 
   const value = useMemo<CycleContextValue>(
@@ -279,10 +329,12 @@ export function CycleProvider({ children }: { children: ReactNode }) {
       removeCycle,
       retry: refresh,
     }),
-    [state, isConnected, addCycle, removeCycle, refresh],
+    [state, isConnected, addCycle, removeCycle, refresh]
   );
 
-  return <CycleContext.Provider value={value}>{children}</CycleContext.Provider>;
+  return (
+    <CycleContext.Provider value={value}>{children}</CycleContext.Provider>
+  );
 }
 
 export function useCycles() {

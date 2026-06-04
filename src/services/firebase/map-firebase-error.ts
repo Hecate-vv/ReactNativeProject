@@ -48,7 +48,9 @@ export function mapFirestoreError(e: unknown): string {
     case 'auth/operation-not-allowed':
       return 'Logowanie email/hasło nie jest włączone w Firebase Console.';
     default:
-      return message && message.length < 120 ? message : 'Wystąpił błąd. Spróbuj ponownie.';
+      return message && message.length < 120
+        ? message
+        : 'Wystąpił błąd. Spróbuj ponownie.';
   }
 }
 

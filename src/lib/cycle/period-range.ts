@@ -20,7 +20,10 @@ export function eachDayInRange(startIso: string, endIso: string): string[] {
   return days;
 }
 
-export function findCycleForDate(cycles: Cycle[], iso: string): Cycle | undefined {
+export function findCycleForDate(
+  cycles: Cycle[],
+  iso: string
+): Cycle | undefined {
   return cycles.find((cycle) => {
     const end = cycle.endDate ?? cycle.startDate;
     return iso >= cycle.startDate && iso <= end;
@@ -31,7 +34,7 @@ export function rangesOverlap(
   startA: string,
   endA: string,
   startB: string,
-  endB: string,
+  endB: string
 ): boolean {
   return startA <= endB && startB <= endA;
 }
@@ -40,7 +43,7 @@ export function cycleOverlapsExisting(
   cycles: Cycle[],
   startDate: string,
   endDate: string,
-  excludeId?: string,
+  excludeId?: string
 ): boolean {
   return cycles.some((cycle) => {
     if (excludeId && cycle.id === excludeId) return false;
@@ -61,7 +64,7 @@ export function applyRangeMarks(
   startIso: string,
   endIso: string,
   color: string,
-  textColor: string,
+  textColor: string
 ) {
   const days = eachDayInRange(startIso, endIso);
   days.forEach((iso, index) => {
@@ -81,7 +84,7 @@ export function buildPeriodMarkedDates(
   periodColor: string,
   periodTextColor: string,
   draftColor: string,
-  draftTextColor: string,
+  draftTextColor: string
 ): Record<string, PeriodMark> {
   const marked: Record<string, PeriodMark> = {};
 
@@ -95,7 +98,13 @@ export function buildPeriodMarkedDates(
     if (draftEnd && draftEnd >= draftStart) {
       applyRangeMarks(marked, draftStart, end, draftColor, draftTextColor);
     } else {
-      applyRangeMarks(marked, draftStart, draftStart, draftColor, draftTextColor);
+      applyRangeMarks(
+        marked,
+        draftStart,
+        draftStart,
+        draftColor,
+        draftTextColor
+      );
     }
   }
 
