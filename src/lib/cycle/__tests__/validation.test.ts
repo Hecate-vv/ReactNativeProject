@@ -2,7 +2,9 @@ import {
   isValidIsoDate,
   validatePeriodDateRange,
   validatePeriodInput,
+  validatePeriodRange,
 } from '@/lib/cycle/validation';
+import type { Cycle } from '@/types/cycle';
 
 describe('validatePeriodDateRange', () => {
   it('rejects endDate before startDate', () => {
@@ -43,6 +45,48 @@ describe('validatePeriodInput', () => {
       endDate: '2026-01-05',
     });
     expect(result.valid).toBe(false);
+  });
+});
+
+describe('validatePeriodRange', () => {
+  const existing: Cycle[] = [
+    {
+      id: 'existing-1',
+      startDate: '2026-01-01',
+      endDate: '2026-01-05',
+      createdAt: '2026-01-01',
+    },
+  ];
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-06-03T12:00:00'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('rejects start date in the future', () => {
+    const result = validatePeriodRange('2026-12-01', undefined, existing);
+    expect(result).toEqual({
+      valid: false,
+      message: 'Data startu nie może być w przyszłości.',
+    });
+  });
+
+  it('rejects range overlapping an existing period', () => {
+    const result = validatePeriodRange('2026-01-03', '2026-01-07', existing);
+    expect(result).toEqual({
+      valid: false,
+      message: 'Ten zakres nachodzi na inny zapisany okres.',
+    });
+  });
+
+  it('accepts non-overlapping range before existing period', () => {
+    expect(validatePeriodRange('2025-12-20', '2025-12-25', existing)).toEqual({
+      valid: true,
+    });
   });
 });
 

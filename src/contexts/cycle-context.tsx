@@ -9,6 +9,7 @@ import React, {
   type ReactNode,
 } from 'react';
 
+import { cycleReducer, initialCycleState } from '@/contexts/cycle-reducer';
 import { useAuth } from '@/hooks/use-auth';
 import { useNetwork } from '@/hooks/use-network';
 import {
@@ -40,52 +41,11 @@ import type { Period } from '@/types/period';
 const OFFLINE_MUTATION_MESSAGE =
   'Brak internetu. Zapis i usuwanie wymagają połączenia online.';
 
-type CycleState = {
-  cycles: Cycle[];
-  isLoading: boolean;
-  error: string | null;
-  isFromCache: boolean;
-};
-
-type CycleAction =
-  | { type: 'FETCH_START' }
-  | {
-      type: 'FETCH_SUCCESS';
-      payload: { cycles: Cycle[]; isFromCache: boolean };
-    }
-  | { type: 'FETCH_ERROR'; payload: string }
-  | { type: 'SET_CYCLES'; payload: { cycles: Cycle[]; isFromCache: boolean } };
-
 function sortCycles(cycles: Cycle[]): Cycle[] {
   return [...cycles].sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
-function cycleReducer(state: CycleState, action: CycleAction): CycleState {
-  switch (action.type) {
-    case 'FETCH_START':
-      return { ...state, isLoading: true, error: null };
-    case 'FETCH_SUCCESS':
-      return {
-        cycles: action.payload.cycles,
-        isLoading: false,
-        error: null,
-        isFromCache: action.payload.isFromCache,
-      };
-    case 'FETCH_ERROR':
-      return { ...state, isLoading: false, error: action.payload };
-    case 'SET_CYCLES':
-      return {
-        cycles: action.payload.cycles,
-        isLoading: false,
-        error: null,
-        isFromCache: action.payload.isFromCache,
-      };
-    default:
-      return state;
-  }
-}
-
-type CycleContextValue = CycleState & {
+type CycleContextValue = import('@/contexts/cycle-reducer').CycleState & {
   /** Alias `cycles` — spójny z `AsyncState.data` (kryterium 7). */
   data: Cycle[];
   isOffline: boolean;
@@ -119,12 +79,7 @@ function applyPeriodsToCycles(periods: Period[]): Cycle[] {
 export function CycleProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { isConnected } = useNetwork();
-  const [state, dispatch] = useReducer(cycleReducer, {
-    cycles: [],
-    isLoading: false,
-    error: null,
-    isFromCache: false,
-  });
+  const [state, dispatch] = useReducer(cycleReducer, initialCycleState);
 
   const applyCachedPeriods = useCallback(
     async (userId: string): Promise<boolean> => {
