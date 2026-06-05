@@ -73,8 +73,6 @@ Aplikacja do śledzenia cyklu menstruacyjnego z Firebase i codzienną afirmacją
 
 ### Screenshoty / GIFy
 
-Podmien ponizsze sciezki:
-
 - Home  
   `![Home](docs/media/home.png)`
 - Kalendarz  
@@ -83,11 +81,10 @@ Podmien ponizsze sciezki:
   `![Statystyki](docs/media/insights.png)`
 - Logowanie  
   `![Logowanie](docs/media/login.png)`
-- GIF flow (opcjonalnie)  
-  `![Flow](docs/media/app-flow.gif)`
 
 ## Deployment i budowanie aplikacji (EAS)
 Aplikacja jest zbudowana i po build .apk trzeba skontaktować się z właścicielem Repo. Aby zbudować samemu należy wykonać:
 - `npx eas-cli@latest login`
 - `npx eas-cli@latest init`
 - `npx eas-cli@latest build --platform android --profile preview`
+ 
